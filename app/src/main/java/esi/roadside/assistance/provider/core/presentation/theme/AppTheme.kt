@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.rememberDynamicColorScheme
 import esi.roadside.assistance.provider.core.data.SettingsDataStore
@@ -21,7 +22,7 @@ internal fun AppTheme(
     content: @Composable() () -> Unit,
 ) {
     val datastore = SettingsDataStore(LocalContext.current)
-    val theme by datastore.theme.collectAsState(initial = "system")
+    val theme by datastore.theme.collectAsState(initial = "light")
     val extraDark by datastore.extraDark.collectAsState(initial = false)
     val isDark =
         when (theme) {
@@ -29,26 +30,52 @@ internal fun AppTheme(
             "dark" -> true
             else -> isSystemInDarkTheme()
         }
-    val colorTheme by datastore.colorTheme.collectAsState(initial = "green")
     val dynamicColor = datastore.dynamicColors.collectAsState(initial = false).value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val lightColors =
-        when (colorTheme) {
-            "blue" -> BlueColors.lightScheme
-            "green" -> GreenColors.lightScheme
-            "red" -> RedColors.lightScheme
-            "orange" -> OrangeColors.lightScheme
-            "purple" -> PurpleColors.lightScheme
-            else -> BlueColors.lightScheme
+    val lightColors = lightScheme
+    val darkColors = darkScheme
+    val colorScheme =
+        when {
+            seedColor != null -> rememberDynamicColorScheme(seedColor = seedColor, isDark, extraDark)
+            dynamicColor && isDark -> {
+                dynamicDarkColorScheme(LocalContext.current)
+            }
+            dynamicColor && !isDark -> {
+                dynamicLightColorScheme(LocalContext.current)
+            }
+            isDark -> darkColors
+            else -> lightColors
         }
-    val darkColors =
-        when (colorTheme) {
-            "blue" -> BlueColors.darkScheme
-            "green" -> GreenColors.darkScheme
-            "red" -> RedColors.darkScheme
-            "orange" -> OrangeColors.darkScheme
-            "purple" -> PurpleColors.darkScheme
-            else -> BlueColors.darkScheme
+    DynamicMaterialTheme(
+        primary = colorScheme.primary,
+        secondary = colorScheme.secondary,
+        tertiary = colorScheme.tertiary,
+        neutral = Color(49, 49, 49),
+        animate = true,
+        useDarkTheme = isDark,
+        withAmoled = extraDark,
+        typography = interTypography(MaterialTheme.typography),
+        content = content
+    )
+}
+
+
+@Composable
+internal fun PreviewAppTheme(
+    seedColor: Color? = null,
+    content: @Composable() () -> Unit,
+) {
+    val datastore = SettingsDataStore(LocalContext.current)
+    val theme by datastore.theme.collectAsState(initial = "light")
+    val extraDark by datastore.extraDark.collectAsState(initial = false)
+    val isDark =
+        when (theme) {
+            "light" -> false
+            "dark" -> true
+            else -> isSystemInDarkTheme()
         }
+    val dynamicColor = datastore.dynamicColors.collectAsState(initial = false).value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val lightColors = lightScheme
+    val darkColors = darkScheme
     val colorScheme =
         when {
             seedColor != null -> rememberDynamicColorScheme(seedColor = seedColor, isDark, extraDark)
@@ -67,7 +94,6 @@ internal fun AppTheme(
         tertiary = colorScheme.tertiary,
         animate = true,
         withAmoled = extraDark,
-        typography = rubikTypography(MaterialTheme.typography),
         content = content
     )
 }
