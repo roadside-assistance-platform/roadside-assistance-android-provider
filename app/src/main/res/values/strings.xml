@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">RoadsideAssistanceProvider</string>
+    <string name="app_name">Depan.Go Provider</string>
+
     <string name="home">Home</string>
     <string name="settings">Settings</string>
     <string name="theme">Theme</string>
@@ -108,7 +109,7 @@
     <string name="customize_player">Customize player</string>
     <string name="play_next">Play next</string>
     <string name="add_to_playing_queue">Add to playing queue</string>
-    <string name="developer">Developer</string>
+    <string name="app_devs">App Developers</string>
     <string name="project">Project</string>
     <string name="source_code">Source Code</string>
     <string name="send_feedback">Send Feedback</string>
@@ -171,9 +172,149 @@
     <string name="show_pitch_button">Show pitch button</string>
     <string name="show_timer_button">Show timer button</string>
     <string name="show_lyrics_button">Show lyrics button</string>
+    <string name="join_us">Join us</string>
+    <string name="join_us_text">and get back on the road quickly!</string>
+    <string name="sign_up">Sign up</string>
+    <string name="log_in">Log in</string>
+    <string name="terms_of_service">Terms of service</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="email_placeholder">Enter your email address</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot password ?</string>
+    <string name="welcome_back">Welcome Back !</string>
+    <string name="log_in_to_continue">Log in to continue</string>
+    <string name="don_t_have_an_account">Don’t have an account ?</string>
+    <string name="receive_code">Receive code</string>
+    <string name="send_reset_code">Send reset code</string>
+    <string name="send_code_text">we will send a reset code to your email</string>
+    <string name="enter_reset_code">Enter reset code</string>
+    <string name="enter_the_code_text">Enter the code we sent to reset your password</string>
+    <string name="didn_t_receive_anything">Didn’t receive anything ?</string>
+    <string name="send_code_again">Send code again</string>
+    <string name="back_to_login">back to login</string>
+    <string name="incorrect_code">Incorrect code</string>
+    <string name="invalid_email">Invalid email</string>
+    <string name="incorrect_password">Incorrect password</string>
+    <string name="full_name">Full name</string>
+    <string name="full_name_placeholder">Enter your full name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="confirm_password_placeholder">Confirm your password</string>
+    <string name="continue_text">Continue</string>
+    <string name="already_have_an_account">Already have an account ?</string>
+    <string name="phone_number">Phone number</string>
+    <string name="phone_number_placeholder">Enter your phone number</string>
+    <string name="verify_email">Verify email</string>
+    <string name="verify_email_text">Our service providers will be contacting you through your phone number</string>
+    <string name="verification_code">Verification code</string>
+    <string name="enter_the_code">Enter the code</string>
+    <string name="password_placeholder">Enter your password</string>
+    <string name="invalid_phone_number">Invalid phone number</string>
+    <string name="profile">Profile</string>
+    <string name="request_service">Request Service</string>
     <plurals name="item_s">
         <item quantity="one">1 item</item>
         <item quantity="zero">no items</item>
         <item quantity="other">%d items</item>
     </plurals>
+    <string name="request_a_service">Request a service</string>
+    <string name="request_assistance">Request assistance</string>
+    <string name="request_assistance_des">"Your request will be send to a nearby provider "</string>
+    <string name="selecte_the_field">Select the field of your issue</string>
+    <string name="unkown">I don’t know</string>
+    <string name="mechanic">mechanic</string>
+    <string name="electrician">electrician</string>
+    <string name="towing">Towing</string>
+    <string name="fuel">Fuel</string>
+    <string name="des_issue">Describe the issue</string>
+
+    <!--    Hints-->
+    <string name="hint_request_ass">ex: “ strange noise” , “car wont’ start”....etc</string>
+    <string name="submit_req">Submit request</string>
+    <string name="notifications">Notifications</string>
+
+    <string name="warning">Warning!</string>
+    <string name="dear">Dear</string>
+    <string name="warning_des">We noticed that your recent activity violates our Terms of Use
+
+  Please review our guidelines and ensure compliance in the future. Repeated violations may result in account suspension.
+
+  Thank you for your understanding.
+
+  </string>
+    <string name="accepted">Accepted!</string>
+    <string name="accepted_by_1">Your assistance request has been accepted by</string>
+    <string name="accepted_by_2">They will contact you shortly via phone number
+
+ If you do not receive a call, you can report this provider for false acceptance.
+
+  Thank you for using Depan.Go!</string>
+    <string name="no_notifications">No notifications yet!</string>
+    <string name="email_adress">Email address</string>
+    <string name="client_name">Client Name</string>
+    <string name="save_changes">SaveChanges\n</string>
+    <string name="empty" />
+    <string name="flat_tire">Flat tire</string>
+    <string name="fuel_delivery">Fuel delivery</string>
+    <string name="lockout">Lockout</string>
+    <string name="emergency">Emergency</string>
+    <string name="other">Other</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="global_settings">Global settings</string>
+    <string name="change_password">Change password</string>
+    <string name="delete_account">Delete account</string>
+    <string name="account">Account</string>
+    <string name="legal">Legal</string>
+    <string name="support">Support</string>
+    <string name="help">Help</string>
+    <string name="logout">Logout</string>
+    <string name="app_devs_names">Younes Bouhouche\nAbderrahme Abdat\nOussama Chatri</string>
+    <string name="backend_devs_names">Mohamed Amine Lachi\nMounir Khabchache</string>
+    <string name="backend_devs">Backend Developers</string>
+    <string name="designer">Designer</string>
+    <string name="designer_name">Nadjet Bannaceur</string>
+    <string name="error">Error</string>
+    <string name="server_error">Server Error, please try again later</string>
+    <string name="user_exists_error">User already Exists</string>
+    <string name="serialization_error">Serialization Error</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="no_internet_error">No internet connection</string>
+    <string name="empty_field_error">This field can\'t be empty</string>
+    <string name="invalid_field_error">Invalid value</string>
+    <string name="short_field_error">Short value</string>
+    <string name="mismatch_field_error">Mismatch value</string>
+    <string name="error_empty_email">Email can\'t be empty</string>
+    <string name="error_invalid_email">Invalid email</string>
+    <string name="error_empty_password">Password can\'t be empty</string>
+    <string name="error_short_password">Password can\'t be short</string>
+    <string name="error_empty_full_name">Full name can\'t be empty</string>
+    <string name="error_empty_confirm_password">Confirm password can\'t be empty</string>
+    <string name="error_password_mismatch">Password mismatch</string>
+    <string name="error_empty_phone_number">Phone number can\'t be empty</string>
+    <string name="error_short_phone_number">Phone number must have at least 10 digits</string>
+    <string name="error_invalid_phone_number">Invalid phone number</string>
+    <string name="user_not_found_error">User not found</string>
+    <string name="internal_error">Internal error</string>
+    <string name="skip_verification">Skip</string>
+    <string name="google_unexpected_error">Unexpected type of credential</string>
+    <string name="google_invalid_id_token_error">Received an invalid google id token response</string>
+    <string name="incorrect_credentials_error">Incorrect email or password</string>
+    <string name="log_in_with_google">Log in with Google</string>
+    <string name="description_issue_placeholder">ex: “strange noise”, “car wont’ start”....etc</string>
+    <string name="next">Next</string>
+    <string name="welcome_title_1">Hi and welcome to Depan.Go!</string>
+    <string name="welcome_text_1">Discover Algeria’s premier roadside assistance app!</string>
+    <string name="welcome_title_2">Rescue is just one click away!</string>
+    <string name="welcome_text_2">get the help whenever u need it , ur safety is our priority</string>
+    <string name="welcome_title_3">Reliable and affordable!</string>
+    <string name="welcome_text_3">Trusted service providers and great prices !</string>
+    <string name="skip">Skip</string>
+    <string name="no_internet_error_descr">Check your internet connection and try again</string>
+    <string name="retry">Retry</string>
+    <string name="error_uploading_image">Error uploading image</string>
+    <string name="request_submitted">Request submitted successfully</string>
+    <string name="email_not_verified_error">Email not verified</string>
+    <string name="verification_email_sent">Verification email sent</string>
+    <string name="error_invalid_full_name">Full name can\'t contain numbers, special characters, or multiple spaces</string>
+    <string name="error_weak_password">Password must contain at least: one lowercase letter, one uppercase letter, one digit, and one of these special characters: @, $, !, %, *, ?, and &amp;.</string>
 </resources>

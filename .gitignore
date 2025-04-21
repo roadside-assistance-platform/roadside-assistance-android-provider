@@ -35,3 +35,4 @@ gradle-app.setting
 .cxx
 local.properties
 /app/src/main/res/values/mapbox_access_token.xml
+/.idea/
