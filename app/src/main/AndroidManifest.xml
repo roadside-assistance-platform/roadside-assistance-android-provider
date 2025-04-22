@@ -30,7 +30,6 @@
             android:name=".auth.presentation.AuthActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:noHistory="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:theme="@style/Theme.RoadsideAssistanceProvider">
             <intent-filter>
