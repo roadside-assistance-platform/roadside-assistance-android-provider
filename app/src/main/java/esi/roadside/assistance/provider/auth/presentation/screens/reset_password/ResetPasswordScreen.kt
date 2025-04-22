@@ -106,7 +106,7 @@ fun ResetPasswordScreen(
             }
             Spacer(Modifier.height(40.dp))
             TextButton(
-                { onAction(Action.GoToLogin) },
+                { onAction(Action.Back) },
                 contentPadding = PaddingValues(horizontal = 8.dp),
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.tertiary

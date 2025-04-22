@@ -7,6 +7,7 @@ import esi.roadside.assistance.provider.main.presentation.NavRoutes as MainNavRo
 
 sealed interface Event {
     data class AuthNavigate(val route: NavRoutes): Event
+    data object AuthNavigateBackward: Event
     data object ExitToAuthActivity: Event
     data object AuthShowNoInternet: Event
     data object LaunchGoogleSignIn: Event

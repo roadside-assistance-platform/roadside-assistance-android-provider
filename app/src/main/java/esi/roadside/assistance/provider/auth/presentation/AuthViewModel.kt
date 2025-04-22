@@ -61,6 +61,7 @@ import esi.roadside.assistance.provider.core.domain.model.ClientModel
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event
+import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthNavigate
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthShowError
 import esi.roadside.assistance.provider.core.presentation.util.Event.ImageUploadError
@@ -263,10 +264,7 @@ class AuthViewModel(
                 sendEvent(AuthNavigate(NavRoutes.ForgotPassword))
             }
             is Action.Login -> {
-                val inputError = ValidateInput.validateLogin(
-                    _loginUiState.value.email,
-                    _loginUiState.value.password
-                )
+                val inputError = ValidateInput.validateLogin(_loginUiState.value.email, _loginUiState.value.password)
                 if (inputError != null) {
                     _loginUiState.update {
                         it.copy(
@@ -323,7 +321,6 @@ class AuthViewModel(
                         cloudinaryUseCase(
                             image = _signupUiState.value.image ?: "".toUri(),
                             onSuccess = {
-                                Log.i("Welcome", "Image uploaded successfully: $it")
                                 url = it
                             },
                             onProgress = { progress ->
@@ -336,7 +333,7 @@ class AuthViewModel(
                             },
                             onFinished = {
                                 _signupUiState.update {
-                                    it.copy(photo = url ?: "_")
+                                    it.copy(photo = url ?: "_", loading = false)
                                 }
                                 sendEvent(AuthNavigate(NavRoutes.VerifyEmail))
                                 onAction(SendCode(_signupUiState.value.email))
@@ -350,7 +347,7 @@ class AuthViewModel(
                 viewModelScope.launch {
                     sendEmailUseCase(SendEmailModel(action.email))
                         .onSuccess {
-                            sendEvent(Event.ShowAuthActivityMessage(R.string.verification_email_sent))
+                            sendEvent(ShowAuthActivityMessage(R.string.verification_email_sent))
                             _signupUiState.update {
                                 it.copy(loading = false)
                             }
@@ -499,7 +496,24 @@ class AuthViewModel(
                 _step.value--
             }
             Skip -> {
-                _step.value = 3
+                _step.value = 2
+            }
+            Action.GoToSignup2 -> {
+                sendEvent(AuthNavigate(NavRoutes.Signup2))
+            }
+            Action.Back -> {
+                sendEvent(AuthNavigateBackward)
+            }
+
+            is Action.AddCategory -> {
+                _signupUiState.update {
+                    it.copy(categories = it.categories.plus(setOf(action.category)))
+                }
+            }
+            is Action.RemoveCategory -> {
+                _signupUiState.update {
+                    it.copy(categories = it.categories.minus(action.category))
+                }
             }
         }
     }

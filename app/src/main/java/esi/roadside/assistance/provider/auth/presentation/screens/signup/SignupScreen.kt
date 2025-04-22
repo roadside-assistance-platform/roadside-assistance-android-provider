@@ -1,5 +1,6 @@
 package esi.roadside.assistance.provider.auth.presentation.screens.signup
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -14,14 +15,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
@@ -29,12 +40,15 @@ import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
+import esi.roadside.assistance.provider.core.domain.Category
 import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
 import esi.roadside.assistance.provider.core.presentation.components.ProfilePicturePicker
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
+import esi.roadside.assistance.provider.main.domain.Categories
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupScreen(
     uiState: SignupUiState,
@@ -58,14 +72,14 @@ fun SignupScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Join us !",
+                    text = stringResource(R.string.join_us),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleLarge,
                     color = lightScheme.background
                 )
                 Text(
-                    text = "Create an account",
+                    text = stringResource(R.string.create_an_account),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
@@ -101,42 +115,43 @@ fun SignupScreen(
                     error = uiState.phoneNumberError,
                     enabled = !uiState.loading,
                 )
-                MyTextField(
-                    uiState.email,
-                    {
-                        onAction(Action.SetSignupEmail(it))
-                    },
-                    label = stringResource(R.string.email),
-                    placeholder = stringResource(R.string.email_placeholder),
-                    error = uiState.emailError,
-                    enabled = !uiState.loading
-                )
-                PasswordTextField(
-                    uiState.password,
-                    {
-                        onAction(Action.SetSignupPassword(it))
-                    },
-                    uiState.passwordHidden,
-                    {
-                        onAction(Action.ToggleSignupPasswordHidden)
-                    },
-                    error = uiState.passwordError,
-                    enabled = !uiState.loading
-                )
-                PasswordTextField(
-                    uiState.confirmPassword,
-                    {
-                        onAction(Action.SetSignupConfirmPassword(it))
-                    },
-                    uiState.confirmPasswordHidden,
-                    {
-                        onAction(Action.ToggleSignupConfirmPasswordHidden)
-                    },
-                    error = uiState.confirmPasswordError,
-                    label = stringResource(R.string.confirm_password),
-                    placeholder = stringResource(R.string.confirm_password_placeholder),
-                    enabled = !uiState.loading
-                )
+                Categories.entries.chunked(2).forEach {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        it.forEach { category ->
+                            Row(
+                                Modifier
+                                    .weight(1f)
+                                    .clip(MaterialTheme.shapes.small)
+                                    .clickable {
+                                    onAction(if (uiState.categories.contains(category))
+                                        Action.RemoveCategory(category)
+                                    else Action.AddCategory(category))
+                                },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(
+                                    checked = uiState.categories.contains(category),
+                                    onCheckedChange = {
+                                        onAction(
+                                            if (it) Action.AddCategory(category)
+                                            else Action.RemoveCategory(category)
+                                        )
+                                    }
+                                )
+                                Text(
+                                    stringResource(category.text),
+                                    Modifier.weight(1f),
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
                 Button(
                     stringResource(R.string.continue_text),
                     Modifier
@@ -144,7 +159,7 @@ fun SignupScreen(
                         .padding(top = 16.dp),
                     enabled = !uiState.loading
                 ) {
-                    onAction(Action.Signup)
+                    onAction(Action.GoToSignup2)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.already_have_an_account))

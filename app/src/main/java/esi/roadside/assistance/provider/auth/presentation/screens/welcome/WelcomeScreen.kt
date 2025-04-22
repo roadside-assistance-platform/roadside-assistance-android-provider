@@ -50,20 +50,10 @@ fun WelcomeScreen(
                 onSkip = { if (!this.transition.isRunning) onAction(Action.Skip) },
                 onNext = { if (!this.transition.isRunning) onAction(Action.NextStep) }
             )
-            2 -> WelcomeScreenTemplate(
-                background = R.drawable.welcome_background_3,
-                picture = R.drawable.welcome_3,
-                title = R.string.welcome_title_3,
-                text = R.string.welcome_text_3,
-                modifier = modifier,
-                loading = loading,
-                onSkip = { if (!this.transition.isRunning) onAction(Action.Skip) },
-                onNext = { if (!this.transition.isRunning) onAction(Action.NextStep) }
-            )
-            3 -> GetStartedScreen(onAction)
+            2 -> GetStartedScreen(onAction)
         }
     }
-    BackHandler(step in 1..3) {
+    BackHandler(step in 1..2) {
         onAction(Action.PreviousStep)
     }
 }

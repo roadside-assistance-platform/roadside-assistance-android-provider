@@ -26,7 +26,7 @@ fun BackgroundBox(
     @DrawableRes
     resource: Int,
     modifier: Modifier = Modifier,
-    navigationButton: @Composable BoxScope.() -> Unit = {
+    navigationButton: (@Composable BoxScope.() -> Unit)? = {
         DefaultBackNavButton(Modifier
             .align(Alignment.TopStart)
             .statusBarsPadding()
@@ -48,8 +48,8 @@ fun BackgroundBox(
                     .align(Alignment.TopCenter),
                 colorFilter = colorFilter
             )
-            navigationButton()
             content()
+            navigationButton?.invoke(this)
         }
     }
 }

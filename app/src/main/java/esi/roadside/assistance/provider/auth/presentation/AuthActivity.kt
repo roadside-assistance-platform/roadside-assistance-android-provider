@@ -43,6 +43,7 @@ import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.screens.login.LoginScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.ResetPasswordScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupScreen
+import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupSecondScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.VerifyEmailScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.welcome.WelcomeScreen
 import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
@@ -88,6 +89,9 @@ class AuthActivity : ComponentActivity() {
                                 launchSingleTop = true
                                 restoreState = true
                             }
+                        }
+                        is Event.AuthNavigateBackward -> {
+                            navController.navigateUp()
                         }
                         is Event.AuthShowError -> {
                             scope.launch {
@@ -138,6 +142,9 @@ class AuthActivity : ComponentActivity() {
                             }
                             composable<NavRoutes.Signup> {
                                 SignupScreen(signupUiState, viewModel::onAction)
+                            }
+                            composable<NavRoutes.Signup2> {
+                                SignupSecondScreen(signupUiState, viewModel::onAction)
                             }
                             composable<NavRoutes.VerifyEmail> {
                                 VerifyEmailScreen(

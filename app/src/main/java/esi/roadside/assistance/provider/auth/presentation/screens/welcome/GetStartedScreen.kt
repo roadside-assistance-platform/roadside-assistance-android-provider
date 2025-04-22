@@ -45,7 +45,7 @@ fun GetStartedScreen(
                     value = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.welcome_4),
+                        painter = painterResource(id = R.drawable.welcome_3),
                         contentDescription = null,
                         modifier = Modifier.fillMaxWidth(),
                         contentScale = ContentScale.Fit

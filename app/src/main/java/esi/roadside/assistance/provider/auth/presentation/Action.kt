@@ -3,6 +3,7 @@ package esi.roadside.assistance.provider.auth.presentation
 import android.net.Uri
 import androidx.credentials.GetCredentialResponse
 import esi.roadside.assistance.provider.core.data.networking.DomainError
+import esi.roadside.assistance.provider.main.domain.Categories
 
 sealed interface Action {
     data object Initiate: Action
@@ -25,8 +26,10 @@ sealed interface Action {
     data class SetSignupImage(val image: Uri?): Action
     data class SetVerifyEmailCode(val code: String): Action
 
+    data object Back: Action
     data object GoToLogin: Action
     data object GoToSignup: Action
+    data object GoToSignup2: Action
     data object GoToForgotPassword: Action
 
     data object Login: Action
@@ -35,6 +38,9 @@ sealed interface Action {
     data object SendCodeToEmail: Action
     data class SendCode(val email: String): Action
     data object Send: Action
+
+    data class AddCategory(val category: Categories): Action
+    data class RemoveCategory(val category: Categories): Action
 
     data class SetResetPasswordEmail(val email: String): Action
 

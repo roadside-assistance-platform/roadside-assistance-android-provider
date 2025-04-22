@@ -14,6 +14,9 @@ sealed class NavRoutes {
     data object Signup : NavRoutes()
 
     @Serializable
+    data object Signup2 : NavRoutes()
+
+    @Serializable
     data object VerifyEmail : NavRoutes()
 
     @Serializable
