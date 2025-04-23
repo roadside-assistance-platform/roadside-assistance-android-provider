@@ -1,12 +1,12 @@
 package esi.roadside.assistance.provider.auth.data.dto
 
 import esi.roadside.assistance.provider.auth.domain.models.AuthResponseModel
-import esi.roadside.assistance.provider.core.data.dto.Client
+import esi.roadside.assistance.provider.core.data.dto.Provider
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResponseData(
-    val user: Client,
+    val user: Provider,
 )
 
 @Serializable
@@ -17,6 +17,6 @@ data class AuthResponse(
 ) {
     fun toLoginResponseModel() = AuthResponseModel(
         message = message,
-        user = data.user.toClientModel()
+        user = data.user.toProviderModel()
     )
 }

@@ -57,10 +57,9 @@ import esi.roadside.assistance.provider.core.data.networking.DomainError
 import esi.roadside.assistance.provider.auth.util.account.AccountManager
 import esi.roadside.assistance.provider.auth.util.account.SignInResult
 import esi.roadside.assistance.provider.auth.util.dataStore
-import esi.roadside.assistance.provider.core.domain.model.ClientModel
+import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
-import esi.roadside.assistance.provider.core.presentation.util.Event
 import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthNavigate
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthShowError
@@ -217,7 +216,7 @@ class AuthViewModel(
                                         loading = false
                                     )
                                 }
-                                if (it) loggedIn(userPreferences.client.toClientModel())
+                                if (it) loggedIn(userPreferences.provider.toProviderModel())
                             }.onError { error ->
                                 _authUiState.update {
                                     it.copy(
@@ -518,7 +517,7 @@ class AuthViewModel(
         }
     }
 
-    private fun loggedIn(client: ClientModel, launchMainActivity: Boolean = true) {
+    private fun loggedIn(client: ProviderModel, launchMainActivity: Boolean = true) {
         Log.i("Welcome", "Logged in successfully: $client")
         saveClient(context, client)
         if (launchMainActivity) sendEvent(LaunchMainActivity)

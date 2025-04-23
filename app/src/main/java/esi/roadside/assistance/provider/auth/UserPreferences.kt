@@ -1,7 +1,7 @@
 package esi.roadside.assistance.provider.auth
 
 import androidx.datastore.core.Serializer
-import esi.roadside.assistance.provider.core.data.dto.Client
+import esi.roadside.assistance.provider.core.data.dto.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -12,7 +12,7 @@ import java.util.Base64
 
 @Serializable
 data class UserPreferences(
-    val client: Client = Client(),
+    val provider: Provider = Provider(),
 )
 
 object UserPreferencesSerializer: Serializer<UserPreferences> {

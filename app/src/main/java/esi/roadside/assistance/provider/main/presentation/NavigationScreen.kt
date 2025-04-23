@@ -74,7 +74,6 @@ fun NavigationScreen(
     val profileUiState by mainViewModel.profileUiState.collectAsState()
     val notifications by mainViewModel.notifications.collectAsState()
     val navigationBarVisible = isParent and ((currentNavRoute != Routes.PROFILE) or !profileUiState.enableEditing)
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = modifier,

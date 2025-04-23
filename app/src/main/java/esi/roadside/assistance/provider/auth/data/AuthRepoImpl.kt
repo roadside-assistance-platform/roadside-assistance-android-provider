@@ -9,12 +9,12 @@ import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.auth.domain.models.VerifyEmailModel
 import esi.roadside.assistance.provider.auth.domain.repository.AuthRepo
 import esi.roadside.assistance.provider.core.data.Endpoints
-import esi.roadside.assistance.provider.core.data.dto.Client
+import esi.roadside.assistance.provider.core.data.dto.Provider
 import esi.roadside.assistance.provider.core.data.networking.CallType
 import esi.roadside.assistance.provider.core.data.networking.DomainError
 import esi.roadside.assistance.provider.core.data.networking.constructUrl
 import esi.roadside.assistance.provider.core.data.networking.safeCall
-import esi.roadside.assistance.provider.core.domain.model.ClientModel
+import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.core.domain.util.Result
 import esi.roadside.assistance.provider.core.domain.util.map
 import io.ktor.client.HttpClient
@@ -50,19 +50,19 @@ class AuthRepoImpl(
         }
     }
 
-    override suspend fun resetPassword(email: String): Result<ClientModel, DomainError> {
+    override suspend fun resetPassword(email: String): Result<ProviderModel, DomainError> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun update(request: UpdateModel): Result<ClientModel, DomainError> {
+    override suspend fun update(request: UpdateModel): Result<ProviderModel, DomainError> {
         persistentCookieStorage.logAllCookies()
         val remote = request.toUpdateRequest()
-        return safeCall<Client>(CallType.UPDATE) {
+        return safeCall<Provider>(CallType.UPDATE) {
             client.put(constructUrl("${Endpoints.UPDATE_PROFILE}${request.id}")) {
                 setBody(remote)
             }.body()
         }.map { response ->
-            response.toClientModel()
+            response.toProviderModel()
         }
     }
 

@@ -19,7 +19,7 @@ import esi.roadside.assistance.provider.main.domain.models.NotificationModel
 import esi.roadside.assistance.provider.main.domain.models.AssistanceRequestModel
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
 import esi.roadside.assistance.provider.main.domain.use_cases.SubmitRequest
-import esi.roadside.assistance.provider.main.presentation.models.ClientUi
+import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.home.request.RequestAssistanceState
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileUiState
@@ -41,7 +41,7 @@ class MainViewModel(
     private val _homeUiState = MutableStateFlow(HomeUiState())
     val homeUiState = _homeUiState.asStateFlow()
 
-    private val _client = MutableStateFlow(ClientUi())
+    private val _client = MutableStateFlow(ProviderUi())
     val client = _client.asStateFlow()
 
     private val _requestAssistanceState = MutableStateFlow(RequestAssistanceState())
@@ -59,9 +59,9 @@ class MainViewModel(
             context.dataStore.data.collectLatest { userPreferences ->
                 _profileUiState.update {
                     it.copy(
-                        client = userPreferences.client.toClientModel().toClientUi(),
-                        editClient = userPreferences.client.toClientModel().toClientUi(),
-                        photo = userPreferences.client.photo ?: ""
+                        client = userPreferences.provider.toProviderModel().toProviderUi(),
+                        editClient = userPreferences.provider.toProviderModel().toProviderUi(),
+                        photo = userPreferences.provider.photo ?: ""
                     )
                 }
             }

@@ -50,7 +50,7 @@ import esi.roadside.assistance.provider.main.presentation.Action
 import esi.roadside.assistance.provider.main.presentation.components.DefaultBackNavButton
 import esi.roadside.assistance.provider.main.presentation.components.InformationCard
 import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
-import esi.roadside.assistance.provider.main.presentation.models.ClientUi
+import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -207,7 +207,7 @@ private fun Preview() {
     PreviewAppTheme {
         ProfileScreen(
             state = ProfileUiState(
-                client = ClientUi(
+                client = ProviderUi(
                     fullName = "John Doe",
                     email = "email@example.com",
                     phone = "0123456789"

@@ -1,24 +1,25 @@
 package esi.roadside.assistance.provider.core.data.dto
 
-import esi.roadside.assistance.provider.core.domain.model.ClientModel
-import esi.roadside.assistance.provider.main.presentation.models.ClientUi
+import esi.roadside.assistance.provider.core.domain.model.ProviderModel
+import esi.roadside.assistance.provider.main.domain.Categories
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Serializable
-data class Client(
+data class Provider(
     val id: String = "",
     val fullName: String = "",
     val email: String = "",
     val password: String = "",
     val phone: String = "",
     val photo: String? = "",
+    val categories: Set<Categories>,
     val services: List<Service> = emptyList(),
     val createdAt: String = "",
     val updatedAt: String = "",
 ) {
-    fun toClientModel() = ClientModel(
+    fun toProviderModel() = ProviderModel(
         id = id,
         fullName = fullName,
         email = email,
@@ -31,6 +32,7 @@ data class Client(
         } catch(_: Exception) {
             OffsetDateTime.now()
         }.toLocalDateTime().atZone(ZoneId.systemDefault()),
+        categories = categories,
         updatedAt = try {
             OffsetDateTime.parse(updatedAt)
         } catch(_: Exception) {

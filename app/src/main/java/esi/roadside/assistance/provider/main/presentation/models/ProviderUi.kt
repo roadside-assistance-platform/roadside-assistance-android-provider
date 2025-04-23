@@ -2,19 +2,22 @@ package esi.roadside.assistance.provider.main.presentation.models
 
 import android.net.Uri
 import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
+import esi.roadside.assistance.provider.main.domain.Categories
 
-data class ClientUi(
+data class ProviderUi(
     val id: String = "",
     val fullName: String = "",
     val email: String = "",
     val password: String = "",
     val phone: String = "",
-    val photo: Uri? = null
+    val photo: Uri? = null,
+    val categories: Set<Categories> = emptySet(),
 ) {
     fun toUpdateModel() = UpdateModel(
         id = id,
         fullName = fullName,
         email = email,
-        phone = phone
+        phone = phone,
+        categories = categories,
     )
 }
