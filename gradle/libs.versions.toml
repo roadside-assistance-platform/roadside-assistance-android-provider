@@ -1,6 +1,9 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 amqpClient = "5.15.0"
+mapboxAndroidCore = "3.1.0"
+mapboxAndroidSdk = "9.5.0"
+mapboxNavigation = "3.8.5"
 cloudinaryAndroid = "3.0.2"
 composeMarkdown = "0.5.7"
 googleid = "1.1.1"
@@ -13,7 +16,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.04.00"
+composeBom = "2025.04.01"
 mapboxMapsCompose = "11.9.1"
 material-icons-extended = "1.7.8"
 material3 = "1.3.2"
@@ -23,7 +26,7 @@ playServicesLocation = "21.3.0"
 navigation-compose = "2.8.9"
 serialization = "1.8.0"
 material-motion-compose-navigation = "1.1.3"
-roomRuntime = "2.7.0"
+roomRuntime = "2.7.1"
 gson = "2.11.0"
 appcompat = "1.7.0"
 datastore-preferences = "1.1.4"
@@ -37,9 +40,15 @@ desugar-jdk-libs = "2.1.5"
 ktor = "3.0.3"
 truth = "1.4.4"
 slf4jSimple = "2.0.9"
+mapboxBase = "0.11.0"
+mapboxGestures = "0.8.0"
+mapboxJavaServices = "6.9.0"
 
 [libraries]
 amqp-client = { module = "com.rabbitmq:amqp-client", version.ref = "amqpClient" }
+mapbox-android-core = { module = "com.mapbox.mapboxsdk:mapbox-android-core", version.ref = "mapboxAndroidCore" }
+mapbox-android-sdk = { module = "com.mapbox.mapboxsdk:mapbox-android-sdk", version.ref = "mapboxAndroidSdk" }
+mapbox-navigation = { module = "com.mapbox.navigationcore:android", version.ref = "mapboxNavigation" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
@@ -93,6 +102,13 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
+mapbox-annotations = { module = "com.mapbox.base:annotations", version.ref = "mapboxBase" }
+mapbox-annotationsProcessor = { module = "com.mapbox.base:annotations-processor", version.ref = "mapboxBase" }
+mapbox-base = { module = "com.mapbox.base:common", version.ref = "mapboxBase" }
+mapbox-gestures = { module = "com.mapbox.mapboxsdk:mapbox-android-gestures", version.ref = "mapboxGestures" }
+mapbox-javaGeoJSON = { module = "com.mapbox.mapboxsdk:mapbox-sdk-geojson", version.ref = "mapboxJavaServices" }
+mapbox-javaTurf = { module = "com.mapbox.mapboxsdk:mapbox-sdk-turf", version.ref = "mapboxJavaServices" }
+mapbox-services = { module = "com.mapbox.mapboxsdk:mapbox-sdk-services", version.ref = "mapboxJavaServices" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -25,6 +25,7 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "BASE_URL", "\"http://localhost:8080/\"")
+            buildConfigField("String", "MAPBOX_GEOCODING", "\"https://api.mapbox.com/search/geocode/v6/\"")
             buildConfigField("String", "CLOUDAMPQ_URL", "\"amqps://xcikzbue:mEXrzOw8yh9B4vwXggUbhIhQj2XjPIES@rat.rmq2.cloudamqp.com/xcikzbue\"")
             buildConfigField("String", "WEB_CLIENT_ID", "\"469116526388-l4fltok5uk1qo6gf4jup9eu57m558h6v.apps.googleusercontent.com\"")
         }
@@ -35,6 +36,7 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "BASE_URL", "\"http://localhost:8080/\"")
+            buildConfigField("String", "MAPBOX_GEOCODING", "\"https://api.mapbox.com/search/geocode/v6/\"")
             buildConfigField("String", "CLOUDAMPQ_URL", "\"amqps://xcikzbue:mEXrzOw8yh9B4vwXggUbhIhQj2XjPIES@rat.rmq2.cloudamqp.com/xcikzbue\"")
             buildConfigField("String", "WEB_CLIENT_ID", "\"469116526388-l4fltok5uk1qo6gf4jup9eu57m558h6v.apps.googleusercontent.com\"")
         }
@@ -106,4 +108,20 @@ dependencies {
     implementation(libs.amqp.client)
     implementation(libs.play.services.auth)
     implementation(libs.compose.markdown)
+//    implementation(libs.mapbox.navigation)
+//    implementation(libs.mapbox.javaTurf)
+//    implementation(libs.mapbox.javaGeoJSON)
+//    implementation(libs.mapbox.services)
+//    implementation(libs.mapbox.base)
+//    implementation(libs.mapbox.gestures)
+//    implementation(libs.mapbox.annotationsProcessor)
+//    implementation(libs.mapbox.annotations)
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
+//    implementation("com.mapbox.navigationcore:navigation:11.9.1")
+//    implementation("com.mapbox.navigationcore:copilot:11.9.1")
+//    implementation("com.mapbox.navigationcore:ui-maps:11.9.1")
+//    implementation("com.mapbox.navigationcore:voice:11.9.1")
+//    implementation("com.mapbox.navigationcore:tripdata:11.9.1")
+//    implementation("com.mapbox.navigationcore:android:11.9.1")
+//    implementation("com.mapbox.navigationcore:ui-components:11.9.1")
 }
