@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.MyScreen
+import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 
 @Composable
@@ -34,58 +34,24 @@ fun ResetPasswordScreen(
     modifier: Modifier = Modifier
 ) {
     MyScreen(
-        if (uiState.sent) stringResource(R.string.enter_reset_code)
-        else stringResource(R.string.receive_code),
-        if (uiState.sent) stringResource(R.string.enter_the_code_text)
-        else stringResource(R.string.send_code_text),
+        stringResource(R.string.receive_code),
+        stringResource(R.string.send_code_text),
         modifier
     ) {
         Column(
             Modifier.padding(horizontal = 48.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            AnimatedContent(uiState.sent, Modifier.fillMaxWidth(), label = "") {
-                if (it)
-                    OutlinedTextField(
-                        uiState.code,
-                        {
-                            onAction(Action.SetCode(it))
-                        },
-                        Modifier.fillMaxWidth(),
-                        label = {
-                            Text(stringResource(R.string.email))
-                        },
-                        placeholder = {
-                            Text(stringResource(R.string.email_placeholder))
-                        },
-                        isError = uiState.codeError,
-                        supportingText = if (!uiState.codeError) null else {
-                            {
-                                Text(stringResource(R.string.incorrect_code))
-                            }
-                        }
-                    )
-                else
-                    OutlinedTextField(
-                        uiState.email,
-                        {
-                            onAction(Action.SetResetPasswordEmail(it))
-                        },
-                        Modifier.fillMaxWidth(),
-                        label = {
-                            Text(stringResource(R.string.email))
-                        },
-                        placeholder = {
-                            Text(stringResource(R.string.email_placeholder))
-                        },
-                        isError = uiState.emailError,
-                        supportingText = if (!uiState.emailError) null else {
-                            {
-                                Text(stringResource(R.string.invalid_email))
-                            }
-                        }
-                    )
-            }
+            MyTextField(
+                uiState.email,
+                {
+                    onAction(Action.SetResetPasswordEmail(it))
+                },
+                Modifier.fillMaxWidth(),
+                label = stringResource(R.string.email),
+                placeholder = stringResource(R.string.email_placeholder),
+                error = uiState.emailError
+            )
             Spacer(Modifier.height(24.dp))
             AnimatedVisibility(uiState.sent) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

@@ -2,10 +2,11 @@ package esi.roadside.assistance.provider.main.domain.repository
 
 import esi.roadside.assistance.provider.core.data.networking.DomainError
 import esi.roadside.assistance.provider.core.domain.util.Result
-import esi.roadside.assistance.provider.main.domain.models.AssistanceRequestModel
-import esi.roadside.assistance.provider.main.domain.models.SubmitResponseModel
+import esi.roadside.assistance.provider.main.domain.models.ClientInfoModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceModel
 
 interface MainRepo {
-    suspend fun submitRequest(request: AssistanceRequestModel): Result<SubmitResponseModel, DomainError>
+    suspend fun getClientInfo(request: String): Result<ClientInfoModel, DomainError>
+    suspend fun acceptService(request: String): Result<ServiceModel, DomainError>
     suspend fun logout()
 }

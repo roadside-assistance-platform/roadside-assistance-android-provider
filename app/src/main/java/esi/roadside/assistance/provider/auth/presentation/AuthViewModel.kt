@@ -29,7 +29,6 @@ import esi.roadside.assistance.provider.auth.presentation.Action.NextStep
 import esi.roadside.assistance.provider.auth.presentation.Action.PreviousStep
 import esi.roadside.assistance.provider.auth.presentation.Action.Send
 import esi.roadside.assistance.provider.auth.presentation.Action.SendCode
-import esi.roadside.assistance.provider.auth.presentation.Action.SetCode
 import esi.roadside.assistance.provider.auth.presentation.Action.SetLoginEmail
 import esi.roadside.assistance.provider.auth.presentation.Action.SetLoginPassword
 import esi.roadside.assistance.provider.auth.presentation.Action.SetResetPasswordEmail
@@ -99,6 +98,9 @@ class AuthViewModel(
     private val _otpUiState = MutableStateFlow(OtpState())
     val otpUiState = _otpUiState.asStateFlow()
 
+    private val _resetPasswordOtpUiState = MutableStateFlow(OtpState())
+    val resetPasswordOtpUiState = _resetPasswordOtpUiState.asStateFlow()
+
     private val _authUiState = MutableStateFlow(AuthUiState())
     val authUiState = _authUiState.asStateFlow()
 
@@ -124,6 +126,32 @@ class AuthViewModel(
             OtpAction.OnKeyboardBack -> {
                 val previousIndex = getPreviousFocusedIndex(_otpUiState.value.focusedIndex)
                 _otpUiState.update { it.copy(
+                    code = it.code.mapIndexed { index, number ->
+                        if(index == previousIndex) {
+                            null
+                        } else {
+                            number
+                        }
+                    },
+                    focusedIndex = previousIndex
+                ) }
+            }
+        }
+    }
+
+    fun onResetPasswordOtpAction(action: OtpAction) {
+        when(action) {
+            is OtpAction.OnChangeFieldFocused -> {
+                _resetPasswordOtpUiState.update { it.copy(
+                    focusedIndex = action.index
+                ) }
+            }
+            is OtpAction.OnEnterNumber -> {
+                enterNumber(action.number, action.index)
+            }
+            OtpAction.OnKeyboardBack -> {
+                val previousIndex = getPreviousFocusedIndex(_resetPasswordOtpUiState.value.focusedIndex)
+                _resetPasswordOtpUiState.update { it.copy(
                     code = it.code.mapIndexed { index, number ->
                         if(index == previousIndex) {
                             null
@@ -377,6 +405,7 @@ class AuthViewModel(
                                 fullName = _signupUiState.value.fullName,
                                 phone = _signupUiState.value.phoneNumber,
                                 photo = _signupUiState.value.photo,
+                                categories = _signupUiState.value.categories,
                             )
                         ).onSuccess { response ->
                             accountManager.signUp(
@@ -407,11 +436,6 @@ class AuthViewModel(
             is SetResetPasswordEmail -> {
                 _resetPasswordUiState.update {
                     it.copy(email = action.email)
-                }
-            }
-            is SetCode -> {
-                _resetPasswordUiState.update {
-                    it.copy(code = action.code)
                 }
             }
             is SetLoginEmail -> {
@@ -514,6 +538,8 @@ class AuthViewModel(
                     it.copy(categories = it.categories.minus(action.category))
                 }
             }
+
+            Action.SendCodeToResetEmail -> TODO()
         }
     }
 

@@ -3,6 +3,7 @@ package esi.roadside.assistance.provider.main.presentation.models
 import android.net.Uri
 import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.main.domain.Categories
+import esi.roadside.assistance.provider.main.domain.models.LocationModel
 
 data class ProviderUi(
     val id: String = "",
@@ -11,6 +12,7 @@ data class ProviderUi(
     val password: String = "",
     val phone: String = "",
     val photo: Uri? = null,
+    val location: LocationModel = LocationModel(0.0, 0.0),
     val categories: Set<Categories> = emptySet(),
 ) {
     fun toUpdateModel() = UpdateModel(
@@ -19,5 +21,6 @@ data class ProviderUi(
         email = email,
         phone = phone,
         categories = categories,
+        location = location,
     )
 }

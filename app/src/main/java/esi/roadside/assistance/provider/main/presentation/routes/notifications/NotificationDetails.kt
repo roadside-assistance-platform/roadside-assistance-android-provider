@@ -17,14 +17,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
-import esi.roadside.assistance.provider.main.domain.models.NotificationModel
+import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
 import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationDetails(
-    notification: NotificationModel,
+    notification: UserNotificationModel,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -57,7 +59,7 @@ fun NotificationDetails(
 private fun Preview() {
     PreviewAppTheme {
         NotificationDetails(
-            notification = NotificationModel(
+            notification = UserNotificationModel(
                 id = "",
                 title = "Mohamed",
                 text = "Dear [client_name]\n" +
@@ -71,7 +73,7 @@ private fun Preview() {
                         "  ",
                 isWarning = true,
                 image = null,
-                createdAt = LocalDateTime.now()
+                createdAt = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()),
             )
         )
     }

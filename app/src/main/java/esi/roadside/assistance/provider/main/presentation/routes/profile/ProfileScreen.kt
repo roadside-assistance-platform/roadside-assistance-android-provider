@@ -65,8 +65,8 @@ fun ProfileScreen(
     LaunchedEffect(state.enableEditing) {
         if (state.enableEditing) focusRequester.requestFocus()
     }
-    LaunchedEffect(state.editClient.photo) {
-        if (state.enableEditing) image = state.editClient.photo
+    LaunchedEffect(state.editUser.photo) {
+        if (state.enableEditing) image = state.editUser.photo
     }
     LaunchedEffect(state.photo) {
         if (!state.enableEditing) image = state.photo
@@ -149,7 +149,7 @@ fun ProfileScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
                 onAction(Action.EditClient(
-                    state.editClient.copy(
+                    state.editUser.copy(
                         photo = it
                     )
                 ))
@@ -157,10 +157,10 @@ fun ProfileScreen(
             InformationCard(
                 icon = Icons.Outlined.Title,
                 title = R.string.full_name,
-                text = state.client.fullName,
-                value = state.editClient.fullName,
+                text = state.user.fullName,
+                value = state.editUser.fullName,
                 onValueChange = { onAction(Action.EditClient(
-                    state.editClient.copy(
+                    state.editUser.copy(
                        fullName = it
                     )
                 )) },
@@ -171,10 +171,10 @@ fun ProfileScreen(
             InformationCard(
                 icon = Icons.Outlined.Email,
                 title = R.string.email_adress,
-                text = state.client.email,
-                value = state.editClient.email,
+                text = state.user.email,
+                value = state.editUser.email,
                 onValueChange = { onAction(Action.EditClient(
-                    state.editClient.copy(
+                    state.editUser.copy(
                         email = it
                     )
                 )) },
@@ -184,10 +184,10 @@ fun ProfileScreen(
             InformationCard(
                 icon = Icons.Outlined.Phone,
                 title = R.string.phone_number,
-                text = state.client.phone,
-                value = state.editClient.phone,
+                text = state.user.phone,
+                value = state.editUser.phone,
                 onValueChange = { onAction(Action.EditClient(
-                    state.editClient.copy(
+                    state.editUser.copy(
                         phone = it
                     )
                 )) },
@@ -207,7 +207,7 @@ private fun Preview() {
     PreviewAppTheme {
         ProfileScreen(
             state = ProfileUiState(
-                client = ProviderUi(
+                user = ProviderUi(
                     fullName = "John Doe",
                     email = "email@example.com",
                     phone = "0123456789"

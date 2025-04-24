@@ -2,6 +2,7 @@ package esi.roadside.assistance.provider.main.domain.models
 
 import esi.roadside.assistance.provider.core.domain.Category
 import esi.roadside.assistance.provider.core.data.dto.Service
+import esi.roadside.assistance.provider.main.domain.Categories
 import java.time.ZonedDateTime
 import java.util.Date
 
@@ -12,8 +13,9 @@ data class ServiceModel(
     val price: Int,
     val serviceRating: Int,
     val serviceLocation: LocationModel,
+    val serviceLocationString: String = "",
     val done: Boolean,
-    val category: Category,
+    val category: Categories,
     val createdAt: ZonedDateTime,
     val updatedAt: ZonedDateTime,
     val comments: List<CommentModel>

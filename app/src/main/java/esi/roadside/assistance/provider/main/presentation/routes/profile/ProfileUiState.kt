@@ -4,8 +4,8 @@ import esi.roadside.assistance.provider.auth.presentation.screens.login.InputErr
 import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 
 data class ProfileUiState(
-    val client: ProviderUi = ProviderUi(),
-    val editClient: ProviderUi = ProviderUi(),
+    val user: ProviderUi = ProviderUi(),
+    val editUser: ProviderUi = ProviderUi(),
     val photo: String = "",
     val fullNameError: InputError? = null,
     val emailError: InputError? = null,

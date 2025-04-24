@@ -4,65 +4,109 @@ import android.content.Context
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fasterxml.jackson.databind.ObjectMapper
 import esi.roadside.assistance.provider.R
+import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.auth.domain.use_case.Cloudinary
 import esi.roadside.assistance.provider.auth.domain.use_case.Update
 import esi.roadside.assistance.provider.auth.util.dataStore
+import esi.roadside.assistance.provider.core.data.dto.Service
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.Field
 import esi.roadside.assistance.provider.core.presentation.util.ValidateInput
 import esi.roadside.assistance.provider.core.presentation.util.sendEvent
+import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
-import esi.roadside.assistance.provider.main.domain.models.NotificationModel
-import esi.roadside.assistance.provider.main.domain.models.AssistanceRequestModel
+import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
+import esi.roadside.assistance.provider.main.domain.models.toLocationModel
+import esi.roadside.assistance.provider.main.domain.use_cases.AcceptService
+import esi.roadside.assistance.provider.main.domain.use_cases.DistanceCalculation
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
-import esi.roadside.assistance.provider.main.domain.use_cases.SubmitRequest
+import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
-import esi.roadside.assistance.provider.main.presentation.routes.home.request.RequestAssistanceState
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileUiState
 import esi.roadside.assistance.provider.main.util.NotificationListener
 import esi.roadside.assistance.provider.main.util.saveClient
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val context: Context,
+    val mapper: ObjectMapper,
     val cloudinary: Cloudinary,
     val updateUseCase: Update,
-    val submitRequestUseCase: SubmitRequest,
+    val acceptServiceUseCase: AcceptService,
     val logoutUseCase: Logout,
+    val reverseGeocodingUseCase: ReverseGeocoding,
+    val distanceCalculationUseCase: DistanceCalculation,
 ): ViewModel() {
-    private val _homeUiState = MutableStateFlow(HomeUiState())
-    val homeUiState = _homeUiState.asStateFlow()
 
     private val _client = MutableStateFlow(ProviderUi())
     val client = _client.asStateFlow()
 
-    private val _requestAssistanceState = MutableStateFlow(RequestAssistanceState())
-    val requestAssistanceState = _requestAssistanceState.asStateFlow()
-
     private val _profileUiState = MutableStateFlow(ProfileUiState())
     val profileUiState = _profileUiState.asStateFlow()
 
-    private val _notifications = MutableStateFlow(listOf<NotificationModel>())
-    val notifications = _notifications.asStateFlow()
+    private val _services = MutableStateFlow(emptyList<Service>())
+
+    private val _userNotification = MutableStateFlow(emptyList<UserNotificationModel>())
+    val userNotification = _userNotification.asStateFlow()
+
+    private val _homeUiState = MutableStateFlow(HomeUiState())
+    val homeUiState = combine(_homeUiState, _services) { state, services ->
+        return@combine state.copy(
+            services = services
+                .map { service ->
+                    var location = ""
+                    reverseGeocodingUseCase(LocationModel.fromString(service.serviceLocation))
+                        .onSuccess {
+                            location = it
+                        }
+                    service.toServiceModel(location)
+                }
+        )
+    }
 
     init {
-        NotificationListener.listenForNotifications(_client.value.id)
         viewModelScope.launch {
             context.dataStore.data.collectLatest { userPreferences ->
                 _profileUiState.update {
                     it.copy(
-                        client = userPreferences.provider.toProviderModel().toProviderUi(),
-                        editClient = userPreferences.provider.toProviderModel().toProviderUi(),
+                        user = userPreferences.provider.toProviderModel().toProviderUi(),
+                        editUser = userPreferences.provider.toProviderModel().toProviderUi(),
                         photo = userPreferences.provider.photo ?: ""
                     )
+                }
+            }
+            NotificationListener.listenForNotifications(_profileUiState.value.user.categories, mapper)
+            NotificationListener.services.consumeEach { service ->
+                viewModelScope.launch {
+                    var distance = Double.POSITIVE_INFINITY
+                    _homeUiState.value.location?.let { location ->
+                        distanceCalculationUseCase(
+                            LocationModel.fromString(service.serviceLocation)
+                                    to location.toLocationModel()
+                        ).onSuccess {
+                            distance = it
+                        }
+                    }
+                    if ((distance / 1000) <= 10)
+                        _services.update {
+                            it + service
+                        }
+                }
+            }
+            NotificationListener.userNotifications.consumeEach { notification ->
+                _userNotification.update {
+                    it + notification.toUserNotificationModel()
                 }
             }
         }
@@ -74,43 +118,29 @@ class MainViewModel(
                 _homeUiState.update {
                     it.copy(location = action.location)
                 }
-            }
-            is Action.SelectCategory -> {
-                _requestAssistanceState.update {
-                    it.copy(category = action.category)
-                }
-            }
-            is Action.SetDescription -> {
-                _requestAssistanceState.update {
-                    it.copy(description = action.description)
-                }
-            }
-            Action.SubmitRequest -> {
                 viewModelScope.launch {
-                    _homeUiState.value.location?.let { location ->
-                        submitRequestUseCase(
-                            AssistanceRequestModel(
-                                description = _requestAssistanceState.value.description,
-                                serviceCategory = _requestAssistanceState.value.category,
-                                serviceLocation = LocationModel.fromPoint(location),
-                                price = 0
+                    action.location?.let { location ->
+                        updateUseCase(
+                            UpdateModel(
+                                id = _client.value.id,
+                                location = location.toLocationModel()
                             )
                         ).onSuccess {
-                            sendEvent(ShowMainActivityMessage(R.string.request_submitted))
-                        }.onError {
-                            sendEvent(ShowMainActivityMessage(it.text))
-                        }
-                        _requestAssistanceState.update {
-                            it.copy(sheetVisible = false)
+                            _profileUiState.update { state ->
+                                state.copy(
+                                    user = it.toProviderUi(),
+                                    editUser = it.toProviderUi()
+                                )
+                            }
                         }
                     }
                 }
             }
             Action.ConfirmProfileEditing -> {
                 val inputError = ValidateInput.validateUpdateProfile(
-                    _profileUiState.value.editClient.fullName,
-                    _profileUiState.value.editClient.email,
-                    _profileUiState.value.editClient.phone
+                    _profileUiState.value.editUser.fullName,
+                    _profileUiState.value.editUser.email,
+                    _profileUiState.value.editUser.phone
                 )
                 if (inputError != null)
                     _profileUiState.update {
@@ -124,7 +154,7 @@ class MainViewModel(
                     _profileUiState.update { it.copy(loading = true) }
                     viewModelScope.launch {
                         cloudinary(
-                            _profileUiState.value.editClient.photo ?: "".toUri(),
+                            _profileUiState.value.editUser.photo ?: "".toUri(),
                             onSuccess = { url ->
                                 _profileUiState.update {
                                     it.copy(
@@ -137,7 +167,7 @@ class MainViewModel(
                             },
                             onFinished = {
                                 viewModelScope.launch {
-                                    updateUseCase(_profileUiState.value.editClient.toUpdateModel().copy(
+                                    updateUseCase(_profileUiState.value.editUser.toUpdateModel().copy(
                                         photo = _profileUiState.value.photo
                                     ))
                                         .onSuccess {
@@ -170,32 +200,39 @@ class MainViewModel(
             }
             Action.CancelProfileEditing -> {
                 _profileUiState.update {
-                    it.copy(enableEditing = false, editClient = it.client)
+                    it.copy(enableEditing = false, editUser = it.user)
                 }
             }
             is Action.Navigate -> sendEvent(MainNavigate(action.route))
             is Action.EditClient -> {
                 _profileUiState.update {
-                    it.copy(editClient = action.client)
+                    it.copy(editUser = action.client)
                 }
-            }
-            Action.ShowRequestAssistance -> {
-                _requestAssistanceState.update {
-                    it.copy(sheetVisible = true)
-                }
-                sendEvent(ShowRequestAssistance)
-            }
-            Action.HideRequestAssistance -> {
-                _requestAssistanceState.update {
-                    it.copy(sheetVisible = false)
-                }
-                sendEvent(ShowRequestAssistance)
             }
 
             Action.Logout -> {
                 viewModelScope.launch {
                     logoutUseCase()
                     sendEvent(ExitToAuthActivity)
+                }
+            }
+
+            is Action.AcceptService -> {
+                viewModelScope.launch {
+                    acceptServiceUseCase(_services.value[action.index].id)
+                        .onSuccess {
+                            sendEvent(ShowMainActivityMessage(R.string.service_accepted))
+                        }
+                }
+            }
+            is Action.SelectService -> {
+                _homeUiState.update {
+                    it.copy(selectedService = action.index)
+                }
+            }
+            Action.UnSelectService -> {
+                _homeUiState.update {
+                    it.copy(selectedService = null)
                 }
             }
         }

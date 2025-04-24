@@ -36,6 +36,7 @@ sealed interface Action {
     data object Signup: Action
     data object Verify: Action
     data object SendCodeToEmail: Action
+    data object SendCodeToResetEmail: Action
     data class SendCode(val email: String): Action
     data object Send: Action
 
@@ -44,7 +45,6 @@ sealed interface Action {
 
     data class SetResetPasswordEmail(val email: String): Action
 
-    data class SetCode(val code: String): Action
     data object SkipVerification: Action
 
     data class ShowAuthError(val error: DomainError): Action

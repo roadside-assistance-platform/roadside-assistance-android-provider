@@ -27,17 +27,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
-import esi.roadside.assistance.provider.main.domain.models.NotificationModel
+import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
 import esi.roadside.assistance.provider.main.presentation.components.NotificationItem
 import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
-    list: List<NotificationModel> = emptyList(),
+    list: List<UserNotificationModel>,
     modifier: Modifier = Modifier,
-    onClick: (NotificationModel) -> Unit = {}
+    onClick: (UserNotificationModel) -> Unit = {}
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -96,11 +98,11 @@ private fun Preview() {
     PreviewAppTheme {
         NotificationsScreen(
             list = List(5) {
-                NotificationModel(
+                UserNotificationModel(
                     id = it.toString(),
                     title = "Notification $it",
                     text = "Description $it",
-                    createdAt = LocalDateTime.of(2021, 10, 10, 10, 10),
+                    createdAt = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()),
                     isWarning = it % 2 == 0,
                     image = "https://picsum.photos/200/300"
                 )

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,7 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import esi.roadside.assistance.provider.core.util.intUpDownTransSpec
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeScreen
-import esi.roadside.assistance.provider.main.presentation.routes.home.request.RequestAssistance
+import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationDetails
 import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationsScreen
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileScreen
@@ -37,7 +35,6 @@ import esi.roadside.assistance.provider.main.presentation.routes.settings.Langua
 import esi.roadside.assistance.provider.main.presentation.routes.settings.PrivacyPolicyScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.SettingsScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.TermsOfServiceScreen
-import kotlinx.coroutines.launch
 import soup.compose.material.motion.animation.materialFadeThroughIn
 import soup.compose.material.motion.animation.materialFadeThroughOut
 
@@ -69,10 +66,9 @@ fun NavigationScreen(
                     it.route.javaClass.kotlin.qualifiedName?.contains(route) == true
                 }
         } != false
-    val homeUiState by mainViewModel.homeUiState.collectAsState()
-    val requestAssistanceState by mainViewModel.requestAssistanceState.collectAsState()
+    val homeUiState by mainViewModel.homeUiState.collectAsState(HomeUiState())
+    val userNotification by mainViewModel.userNotification.collectAsState()
     val profileUiState by mainViewModel.profileUiState.collectAsState()
-    val notifications by mainViewModel.notifications.collectAsState()
     val navigationBarVisible = isParent and ((currentNavRoute != Routes.PROFILE) or !profileUiState.enableEditing)
 
     Scaffold(
@@ -89,13 +85,13 @@ fun NavigationScreen(
             ) {
                 NavigationBar(navController, currentNavRoute) {
                     AnimatedVisibility(
-                        (it == Routes.NOTIFICATIONS) and notifications.isNotEmpty(),
+                        (it == Routes.NOTIFICATIONS) and userNotification.isNotEmpty(),
                         enter = materialFadeThroughIn(),
                         exit = materialFadeThroughOut()
                     ) {
                         Badge {
                             AnimatedContent(
-                                notifications.size,
+                                userNotification.size,
                                 label = "",
                                 transitionSpec = intUpDownTransSpec
                             ) {
@@ -119,12 +115,12 @@ fun NavigationScreen(
             }
             navigation<NavRoutes.Notifications>(NavRoutes.NotificationsList) {
                 composable<NavRoutes.NotificationsList> {
-                    NotificationsScreen(notifications) {
+                    NotificationsScreen(userNotification) {
                         navController.navigate(NavRoutes.Notification(it.id))
                     }
                 }
                 composable<NavRoutes.Notification> { args ->
-                    val notification = notifications.firstOrNull { it.id == args.id }
+                    val notification = userNotification.firstOrNull { it.id == args.id }
                     notification?.let { notification ->
                         NotificationDetails(notification)
                     }
@@ -164,5 +160,4 @@ fun NavigationScreen(
             }
         }
     }
-    RequestAssistance(bottomSheetState, requestAssistanceState, onAction)
 }

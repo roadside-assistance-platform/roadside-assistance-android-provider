@@ -11,9 +11,7 @@ import java.io.OutputStream
 import java.util.Base64
 
 @Serializable
-data class UserPreferences(
-    val provider: Provider = Provider(),
-)
+data class UserPreferences(val provider: Provider = Provider())
 
 object UserPreferencesSerializer: Serializer<UserPreferences> {
     override val defaultValue: UserPreferences

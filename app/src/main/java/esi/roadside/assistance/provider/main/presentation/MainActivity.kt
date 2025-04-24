@@ -18,7 +18,6 @@ import esi.roadside.assistance.provider.core.presentation.util.Event
 import esi.roadside.assistance.provider.core.presentation.util.Event.MainNavigate
 import esi.roadside.assistance.provider.core.util.composables.CollectEvents
 import esi.roadside.assistance.provider.core.util.composables.SetSystemBarColors
-import esi.roadside.assistance.provider.main.util.CollectNotifications
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,9 +67,6 @@ class MainActivity : ComponentActivity() {
                     }
                     else -> Unit
                 }
-            }
-            CollectNotifications {
-                // Handle notification
             }
             AppTheme {
                 NavigationScreen(

@@ -42,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.screens.login.LoginScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.ResetPasswordScreen
+import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.VerifyResetPasswordEmailScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupSecondScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.VerifyEmailScreen
@@ -158,6 +159,16 @@ class AuthActivity : ComponentActivity() {
                             }
                             composable<NavRoutes.ForgotPassword> {
                                 ResetPasswordScreen(resetPasswordUiState, viewModel::onAction)
+                            }
+                            composable<NavRoutes.VerifyResetPasswordEmail> {
+                                VerifyResetPasswordEmailScreen(
+                                    resetPasswordUiState.otpState,
+                                    resetPasswordUiState.loading,
+                                    viewModel::onResetPasswordOtpAction,
+                                    onResend = { viewModel.onAction(Action.SendCodeToResetEmail) },
+                                    onConfirm = { viewModel.onAction(Action.Verify) },
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
                         }
                         if (authUiState.errorDialogVisible)

@@ -9,6 +9,7 @@ import esi.roadside.assistance.provider.auth.domain.use_case.SendEmail
 import esi.roadside.assistance.provider.auth.domain.use_case.SignUp
 import esi.roadside.assistance.provider.auth.domain.use_case.Update
 import esi.roadside.assistance.provider.auth.domain.use_case.VerifyEmail
+import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import org.koin.dsl.module
 
 val useCaseModule = module {

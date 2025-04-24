@@ -29,14 +29,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import esi.roadside.assistance.provider.main.domain.models.NotificationModel
+import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
 import esi.roadside.assistance.provider.main.util.toStringDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 
 @Composable
 fun NotificationItem(
-    notification: NotificationModel,
+    notification: UserNotificationModel,
     onClick: () -> Unit,
 ) {
     Card(
@@ -119,11 +121,11 @@ fun NotificationItem(
 @Composable
 private fun Preview() {
     NotificationItem(
-        notification = NotificationModel(
+        notification = UserNotificationModel(
             id = "1",
             title = "Notification Title",
             text = "Notification Text",
-            createdAt = LocalDateTime.now(),
+            createdAt = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()),
             isWarning = false,
             image = "https://picsum.photos/200/300"
         ),
@@ -135,11 +137,11 @@ private fun Preview() {
 @Composable
 private fun WarningPreview() {
     NotificationItem(
-        notification = NotificationModel(
+        notification = UserNotificationModel(
             id = "1",
             title = "Notification Title",
             text = "Notification Text",
-            createdAt = LocalDateTime.now(),
+            createdAt = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()),
             isWarning = true,
             image = "https://picsum.photos/200/300"
         ),
