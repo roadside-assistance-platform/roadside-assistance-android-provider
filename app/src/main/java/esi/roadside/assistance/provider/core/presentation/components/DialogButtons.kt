@@ -19,6 +19,7 @@ import esi.roadside.assistance.provider.R
 fun DialogButtons(
     cancelListener: (() -> Unit)? = null,
     cancelText: String = stringResource(R.string.cancel),
+    okText: String = stringResource(R.string.ok),
     okListener: (() -> Unit)? = null,
     neutral: (@Composable () -> Unit)? = null,
 ) {
@@ -51,7 +52,7 @@ fun DialogButtons(
                     onClick = okListener,
                     modifier = modifier,
                 ) {
-                    Text(stringResource(R.string.ok))
+                    Text(okText)
                 }
             }
         }

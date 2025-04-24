@@ -45,6 +45,7 @@ fun Dialog(
     centerTitle: Boolean = false,
     cancelListener: (() -> Unit)? = null,
     cancelText: String = stringResource(R.string.cancel),
+    okText: String = stringResource(R.string.ok),
     okListener: (() -> Unit)? = onDismissRequest,
     neutral: @Composable (() -> Unit)? = null,
     content: @Composable (ColumnScope.() -> Unit),
@@ -96,7 +97,7 @@ fun Dialog(
                         header(this)
                     }
                     content(this)
-                    DialogButtons(cancelListener, cancelText, okListener, neutral)
+                    DialogButtons(cancelListener, cancelText, okText, okListener, neutral)
                 }
             }
         }
