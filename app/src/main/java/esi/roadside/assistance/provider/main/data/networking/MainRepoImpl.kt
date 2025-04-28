@@ -27,11 +27,7 @@ class MainRepoImpl(
 ): MainRepo {
     override suspend fun getClientInfo(request: String): Result<ClientInfoModel, DomainError> =
         safeCall<ClientInfo> {
-            client.get(constructUrl(Endpoints.GET_CLIENT_INFO)) {
-                parameters {
-                    append("id", request)
-                }
-            }.body()
+            client.get(constructUrl("${Endpoints.GET_CLIENT_INFO}$request")).body()
         }.map {
             it.toClientInfoModel()
         }

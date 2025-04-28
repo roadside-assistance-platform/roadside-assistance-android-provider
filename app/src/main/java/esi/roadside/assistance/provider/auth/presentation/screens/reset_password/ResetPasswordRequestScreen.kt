@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,11 +21,11 @@ import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.MyScreen
-import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
+import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 
 @Composable
-fun ResetPasswordScreen(
+fun ResetPasswordRequestScreen(
     uiState: ResetPasswordUiState,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier
@@ -38,34 +39,20 @@ fun ResetPasswordScreen(
             Modifier.padding(horizontal = 48.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PasswordTextField(
-                uiState.password,
+            MyTextField(
+                uiState.email,
                 {
                     onAction(Action.SetResetPasswordEmail(it))
                 },
-                uiState.passwordHidden,
-                {
-                    onAction(Action.SetResetPasswordHidden(it))
-                },
                 Modifier.fillMaxWidth(),
-                error = uiState.passwordError
-            )
-            Spacer(Modifier.height(24.dp))
-            PasswordTextField(
-                uiState.confirmPassword,
-                {
-                    onAction(Action.SetResetConfirmPassword(it))
-                },
-                uiState.confirmPasswordHidden,
-                {
-                    onAction(Action.SetResetConfirmPasswordHidden(it))
-                },
-                Modifier.fillMaxWidth(),
-                error = uiState.passwordError
+                label = stringResource(R.string.email),
+                placeholder = stringResource(R.string.email_placeholder),
+                error = uiState.emailError,
+                autoCompleteContentType = ContentType.EmailAddress + ContentType.Username
             )
             Spacer(Modifier.height(24.dp))
             Button(stringResource(R.string.send_reset_code), Modifier.fillMaxWidth()) {
-                onAction(Action.Send)
+                onAction(Action.SendCodeToResetEmail)
             }
             Spacer(Modifier.height(40.dp))
             TextButton(

@@ -41,6 +41,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.screens.login.LoginScreen
+import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.ResetPasswordRequestScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.ResetPasswordScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.VerifyResetPasswordEmailScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupScreen
@@ -158,7 +159,7 @@ class AuthActivity : ComponentActivity() {
                                 )
                             }
                             composable<NavRoutes.ForgotPassword> {
-                                ResetPasswordScreen(resetPasswordUiState, viewModel::onAction)
+                                ResetPasswordRequestScreen(resetPasswordUiState, viewModel::onAction)
                             }
                             composable<NavRoutes.VerifyResetPasswordEmail> {
                                 VerifyResetPasswordEmailScreen(
@@ -167,6 +168,13 @@ class AuthActivity : ComponentActivity() {
                                     viewModel::onResetPasswordOtpAction,
                                     onResend = { viewModel.onAction(Action.SendCodeToResetEmail) },
                                     onConfirm = { viewModel.onAction(Action.Verify) },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            composable<NavRoutes.ResetPassword> {
+                                ResetPasswordScreen(
+                                    resetPasswordUiState,
+                                    viewModel::onAction,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

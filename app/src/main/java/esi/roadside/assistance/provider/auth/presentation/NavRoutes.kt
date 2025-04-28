@@ -24,4 +24,7 @@ sealed class NavRoutes {
 
     @Serializable
     data object VerifyResetPasswordEmail : NavRoutes()
+
+    @Serializable
+    data object ResetPassword : NavRoutes()
 }

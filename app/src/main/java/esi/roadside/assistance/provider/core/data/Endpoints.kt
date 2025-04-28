@@ -11,7 +11,7 @@ object Endpoints {
     const val HOME = "/home"
     const val SEND_EMAIL = "/email/send-code"
     const val VERIFY_EMAIL = "/email/verify-code"
-    const val GET_CLIENT_INFO = "/client/info"
+    const val GET_CLIENT_INFO = "/client/info/"
     const val SERVICE_UPDATE = "/service/update/"
     const val SERVICE_DELETE = "/service/delete/"
     const val GET_LOCATION_STRING = "/location/get-string"

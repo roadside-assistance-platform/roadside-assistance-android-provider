@@ -17,6 +17,6 @@ data class SignupModel(
         fullName = fullName,
         phone = phone,
         photo = photo,
-        categories = categories
+        serviceCategories = categories
     )
 }

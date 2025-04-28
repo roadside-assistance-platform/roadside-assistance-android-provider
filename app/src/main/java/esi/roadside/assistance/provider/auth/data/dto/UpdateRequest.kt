@@ -8,6 +8,6 @@ data class UpdateRequest(
     val fullName: String? = null,
     val phone: String? = null,
     val photo: String? = null,
-    val categories: Set<Categories>? = null,
+    val serviceCategories: Set<Categories>? = null,
     val location: String? = null,
 )
