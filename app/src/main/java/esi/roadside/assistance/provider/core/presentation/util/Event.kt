@@ -9,8 +9,6 @@ sealed interface Event {
     data class AuthNavigate(val route: NavRoutes): Event
     data object AuthNavigateBackward: Event
     data object ExitToAuthActivity: Event
-    data object AuthShowNoInternet: Event
-    data object LaunchGoogleSignIn: Event
     data class AuthShowError(val error: DomainError): Event
     data class MainNavigate(val route: MainNavRoutes): Event
     data object ImageUploadError: Event

@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fasterxml.jackson.databind.ObjectMapper
+import esi.roadside.assistance.provider.NotificationService
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.auth.domain.use_case.Cloudinary
@@ -47,6 +48,7 @@ class MainViewModel(
     val logoutUseCase: Logout,
     val reverseGeocodingUseCase: ReverseGeocoding,
     val distanceCalculationUseCase: DistanceCalculation,
+    val notificationService: NotificationService
 ): ViewModel() {
 
     private val _client = MutableStateFlow(ProviderUi())
@@ -86,7 +88,11 @@ class MainViewModel(
                     )
                 }
             }
-            NotificationListener.listenForNotifications(_profileUiState.value.user.categories, mapper)
+            NotificationListener.listenForNotifications(
+                _profileUiState.value.user.id,
+                _profileUiState.value.user.categories,
+                mapper
+            )
             NotificationListener.services.consumeEach { service ->
                 viewModelScope.launch {
                     var distance = Double.POSITIVE_INFINITY
@@ -98,10 +104,15 @@ class MainViewModel(
                             distance = it
                         }
                     }
-                    if ((distance / 1000) <= 10)
+                    if ((distance / 1000) <= 10) {
                         _services.update {
                             it + service
                         }
+                        notificationService.showNotification(
+                            "You have new request",
+                            "It's ${distance / 1000} km away"
+                        )
+                    }
                 }
             }
             NotificationListener.userNotifications.consumeEach { notification ->

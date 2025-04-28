@@ -44,6 +44,10 @@ sealed interface Action {
     data class RemoveCategory(val category: Categories): Action
 
     data class SetResetPasswordEmail(val email: String): Action
+    data class SetResetPassword(val password: String): Action
+    data class SetResetConfirmPassword(val password: String): Action
+    data class SetResetPasswordHidden(val hidden: Boolean): Action
+    data class SetResetConfirmPasswordHidden(val hidden: Boolean): Action
 
     data object SkipVerification: Action
 

@@ -42,6 +42,7 @@ suspend inline fun <reified T> responseToResult(
         400 -> Error(error400)
         401 -> Error(error401)
         500 -> Error(DomainError.SERVER_ERROR)
+        502 -> Error(DomainError.SERVER_UNAVAILABLE)
         else -> Error(DomainError.UNKNOWN)
     }
 }

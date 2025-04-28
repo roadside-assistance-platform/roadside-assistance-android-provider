@@ -26,7 +26,7 @@ data class ProviderModel(
         password = password,
         phone = phone,
         photo = photo,
-        categories = categories,
+        serviceCategories = categories,
         services = services.map { it.toService() },
         createdAt = createdAt.toOffsetDateTime().toString(),
         updatedAt = updatedAt.toOffsetDateTime().toString()

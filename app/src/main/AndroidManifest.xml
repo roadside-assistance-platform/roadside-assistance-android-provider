@@ -46,6 +46,8 @@
         <activity android:name=".main.presentation.MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:exported="false"/>
+
+        <receiver android:name=".core.util.NotificationsReceiver"/>
     </application>
 
 </manifest>

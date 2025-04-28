@@ -59,6 +59,7 @@ import esi.roadside.assistance.provider.auth.util.dataStore
 import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
+import esi.roadside.assistance.provider.core.presentation.util.Event
 import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthNavigate
 import esi.roadside.assistance.provider.core.presentation.util.Event.AuthShowError
@@ -274,18 +275,6 @@ class AuthViewModel(
             }
             is GoToSignup -> {
                 sendEvent(AuthNavigate(NavRoutes.Signup))
-                viewModelScope.launch {
-                    val result = accountManager.signIn()
-                    if (result is SignInResult.Success) {
-                        _signupUiState.update {
-                            it.copy(
-                                email = result.username,
-                                password = result.password,
-                                confirmPassword = result.password
-                            )
-                        }
-                    }
-                }
             }
             is GoToForgotPassword -> {
                 sendEvent(AuthNavigate(NavRoutes.ForgotPassword))
@@ -362,7 +351,6 @@ class AuthViewModel(
                                 _signupUiState.update {
                                     it.copy(photo = url ?: "_", loading = false)
                                 }
-                                sendEvent(AuthNavigate(NavRoutes.VerifyEmail))
                                 onAction(SendCode(_signupUiState.value.email))
                             }
                         )
@@ -371,13 +359,18 @@ class AuthViewModel(
             }
             is Action.SendCodeToEmail -> onAction(SendCode(_signupUiState.value.email))
             is SendCode -> {
+                _signupUiState.update {
+                    it.copy(loading = true)
+                }
                 viewModelScope.launch {
                     sendEmailUseCase(SendEmailModel(action.email))
                         .onSuccess {
-                            sendEvent(ShowAuthActivityMessage(R.string.verification_email_sent))
                             _signupUiState.update {
                                 it.copy(loading = false)
                             }
+                            _otpUiState.value = OtpState()
+                            sendEvent(ShowAuthActivityMessage(R.string.verification_email_sent))
+                            sendEvent(AuthNavigate(NavRoutes.VerifyEmail))
                         }
                         .onError {
                             _signupUiState.update {
@@ -522,12 +515,15 @@ class AuthViewModel(
                 _step.value = 2
             }
             Action.GoToSignup2 -> {
-                sendEvent(AuthNavigate(NavRoutes.Signup2))
+                if (_signupUiState.value.categories.isEmpty()) {
+                    sendEvent(ShowAuthActivityMessage(R.string.select_at_least_category))
+                } else {
+                    sendEvent(AuthNavigate(NavRoutes.Signup2))
+                }
             }
             Action.Back -> {
                 sendEvent(AuthNavigateBackward)
             }
-
             is Action.AddCategory -> {
                 _signupUiState.update {
                     it.copy(categories = it.categories.plus(setOf(action.category)))
@@ -538,8 +534,37 @@ class AuthViewModel(
                     it.copy(categories = it.categories.minus(action.category))
                 }
             }
-
-            Action.SendCodeToResetEmail -> TODO()
+            Action.SendCodeToResetEmail -> {
+                viewModelScope.launch {
+                    sendEmailUseCase(SendEmailModel(_resetPasswordUiState.value.email))
+                        .onSuccess {
+                            sendEvent(AuthNavigate(NavRoutes.VerifyResetPasswordEmail))
+                        }
+                        .onError {
+                            sendEvent(AuthShowError(it))
+                        }
+                }
+            }
+            is Action.SetResetConfirmPassword -> {
+                _resetPasswordUiState.update {
+                    it.copy(confirmPassword = action.password)
+                }
+            }
+            is Action.SetResetConfirmPasswordHidden -> {
+                _resetPasswordUiState.update {
+                    it.copy(passwordHidden = action.hidden)
+                }
+            }
+            is Action.SetResetPassword -> {
+                _resetPasswordUiState.update {
+                    it.copy(confirmPassword = action.password)
+                }
+            }
+            is Action.SetResetPasswordHidden -> {
+                _resetPasswordUiState.update {
+                    it.copy(passwordHidden = action.hidden)
+                }
+            }
         }
     }
 

@@ -17,20 +17,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,9 +36,7 @@ import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
-import esi.roadside.assistance.provider.core.domain.Category
 import esi.roadside.assistance.provider.core.presentation.components.MyTextField
-import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
 import esi.roadside.assistance.provider.core.presentation.components.ProfilePicturePicker
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
@@ -103,7 +97,8 @@ fun SignupScreen(
                     label = stringResource(R.string.full_name),
                     placeholder = stringResource(R.string.full_name_placeholder),
                     enabled = !uiState.loading,
-                    error = uiState.fullNameError
+                    error = uiState.fullNameError,
+                    autoCompleteContentType = ContentType.PersonFullName,
                 )
                 MyTextField(
                     uiState.phoneNumber,
@@ -114,8 +109,10 @@ fun SignupScreen(
                     placeholder = stringResource(R.string.phone_number_placeholder),
                     error = uiState.phoneNumberError,
                     enabled = !uiState.loading,
+                    autoCompleteContentType = ContentType.PhoneNumberDevice,
+                    keyboardType = KeyboardType.Phone
                 )
-                Categories.entries.chunked(2).forEach {
+                Categories.entries.dropLast(1).chunked(2).forEach {
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -124,14 +121,16 @@ fun SignupScreen(
                         it.forEach { category ->
                             Row(
                                 Modifier
-                                    .weight(1f)
+                                    .weight(.5f)
                                     .clip(MaterialTheme.shapes.small)
+                                    .padding(end = 2.dp)
                                     .clickable {
                                     onAction(if (uiState.categories.contains(category))
                                         Action.RemoveCategory(category)
                                     else Action.AddCategory(category))
                                 },
                                 verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Checkbox(
                                     checked = uiState.categories.contains(category),

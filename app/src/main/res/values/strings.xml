@@ -314,10 +314,14 @@
     <string name="email_not_verified_error">Email not verified</string>
     <string name="verification_email_sent">Verification email sent</string>
     <string name="error_invalid_full_name">Full name can\'t contain numbers, special characters, or multiple spaces</string>
-    <string name="error_weak_password">Password must contain at least: one lowercase letter, one uppercase letter, one digit, and one of these special characters: @, $, !, %, *, ?, and &amp;.</string>
+    <string name="error_weak_password">Password must contain at least: one lowercase letter, one uppercase letter, one digit, and one special character.</string>
     <string name="create_an_account">Create an account</string>
     <string name="accept">Accept</string>
     <string name="nearby_clients">Nearby clients</string>
     <string name="no_nearby_clients">No nearby clients for the moment</string>
     <string name="service_accepted">Service accepted</string>
+    <string name="confirm">Confirm</string>
+    <string name="timeout">Connection timed out</string>
+    <string name="select_at_least_category">Select at least one category</string>
+    <string name="server_unavailable">Server is currently unavailabe, try again later</string>
 </resources>

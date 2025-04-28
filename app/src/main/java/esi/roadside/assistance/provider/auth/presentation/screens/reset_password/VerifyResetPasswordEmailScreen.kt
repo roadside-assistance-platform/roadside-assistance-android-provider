@@ -22,13 +22,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.OtpAction
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.OtpScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.OtpState
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.MyScreen
-import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 
 @Composable
@@ -47,7 +45,9 @@ fun VerifyResetPasswordEmailScreen(
     val keyboardManager = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(loading) {
-        if (!loading) focusRequesters[0].requestFocus()
+        if (!loading)
+            focusRequesters[state.code.indexOfFirst { it == null }.takeUnless { it == -1 } ?: 5]
+                .requestFocus()
     }
 
     LaunchedEffect(state.focusedIndex) {
@@ -106,7 +106,7 @@ fun VerifyResetPasswordEmailScreen(
                 }
             }
             Button(
-                stringResource(R.string.sign_up),
+                stringResource(R.string.confirm),
                 Modifier.fillMaxWidth(),
                 enabled = !loading,
                 onClick = onConfirm

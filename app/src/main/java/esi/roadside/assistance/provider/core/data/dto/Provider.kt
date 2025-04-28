@@ -14,7 +14,7 @@ data class Provider(
     val password: String = "",
     val phone: String = "",
     val photo: String? = "",
-    val categories: Set<Categories> = emptySet(),
+    val serviceCategories: Set<Categories> = emptySet(),
     val services: List<Service> = emptyList(),
     val createdAt: String = "",
     val updatedAt: String = "",
@@ -32,7 +32,7 @@ data class Provider(
         } catch(_: Exception) {
             OffsetDateTime.now()
         }.toLocalDateTime().atZone(ZoneId.systemDefault()),
-        categories = categories,
+        categories = serviceCategories,
         updatedAt = try {
             OffsetDateTime.parse(updatedAt)
         } catch(_: Exception) {

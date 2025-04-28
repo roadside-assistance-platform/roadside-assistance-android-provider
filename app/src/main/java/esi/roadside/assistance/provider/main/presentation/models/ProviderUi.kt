@@ -20,7 +20,7 @@ data class ProviderUi(
         fullName = fullName,
         email = email,
         phone = phone,
-        categories = categories,
+        categories = this@ProviderUi.categories,
         location = location,
     )
 }

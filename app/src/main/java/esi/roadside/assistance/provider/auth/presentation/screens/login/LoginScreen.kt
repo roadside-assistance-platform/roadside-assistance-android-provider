@@ -1,5 +1,6 @@
 package esi.roadside.assistance.provider.auth.presentation.screens.login
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -7,12 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,6 +55,7 @@ fun LoginScreen(
                 error = uiState.emailError,
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Email,
+                autoCompleteContentType = ContentType.EmailAddress + ContentType.Username
             )
             PasswordTextField(
                 uiState.password,
@@ -68,6 +72,7 @@ fun LoginScreen(
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Password,
                 error = uiState.passwordError,
+                autoCompleteContentType = ContentType.Password
             )
             Row(
                 Modifier.fillMaxWidth(),
@@ -77,8 +82,13 @@ fun LoginScreen(
                     Text(stringResource(R.string.forgot_password))
                 }
             }
-            Button(stringResource(R.string.log_in), Modifier.fillMaxWidth(), enabled = !uiState.loading) {
-                onAction(Action.Login)
+            AnimatedContent(uiState.loading) {
+                if (it)
+                    LinearProgressIndicator(Modifier.padding(vertical = 30.dp).fillMaxWidth())
+                else
+                    Button(stringResource(R.string.log_in), Modifier.fillMaxWidth(), enabled = !uiState.loading) {
+                        onAction(Action.Login)
+                    }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.don_t_have_an_account))

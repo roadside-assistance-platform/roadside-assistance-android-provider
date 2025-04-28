@@ -1,5 +1,6 @@
 package esi.roadside.assistance.provider.auth.presentation.screens.signup
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -11,12 +12,15 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,7 +85,9 @@ fun SignupSecondScreen(
                     label = stringResource(R.string.email),
                     placeholder = stringResource(R.string.email_placeholder),
                     error = uiState.emailError,
-                    enabled = !uiState.loading
+                    enabled = !uiState.loading,
+                    autoCompleteContentType = ContentType.EmailAddress + ContentType.NewUsername,
+                    keyboardType = KeyboardType.Email
                 )
                 PasswordTextField(
                     uiState.password,
@@ -93,7 +99,9 @@ fun SignupSecondScreen(
                         onAction(Action.ToggleSignupPasswordHidden)
                     },
                     error = uiState.passwordError,
-                    enabled = !uiState.loading
+                    enabled = !uiState.loading,
+                    autoCompleteContentType = ContentType.NewPassword,
+                    keyboardType = KeyboardType.Password
                 )
                 PasswordTextField(
                     uiState.confirmPassword,
@@ -107,16 +115,24 @@ fun SignupSecondScreen(
                     error = uiState.confirmPasswordError,
                     label = stringResource(R.string.confirm_password),
                     placeholder = stringResource(R.string.confirm_password_placeholder),
-                    enabled = !uiState.loading
+                    enabled = !uiState.loading,
+                    autoCompleteContentType = ContentType.NewPassword,
+                    keyboardType = KeyboardType.Password
                 )
-                Button(
-                    stringResource(R.string.continue_text),
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    enabled = !uiState.loading
+                AnimatedContent(
+                    uiState.loading,
+                    modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    onAction(Action.Signup)
+                    if (it)
+                        LinearProgressIndicator(Modifier.padding(vertical = 30.dp).fillMaxWidth())
+                    else
+                        Button(
+                            stringResource(R.string.continue_text),
+                            Modifier.fillMaxWidth(),
+                            enabled = !uiState.loading
+                        ) {
+                            onAction(Action.Signup)
+                        }
                 }
             }
             TermsAndPolicy(

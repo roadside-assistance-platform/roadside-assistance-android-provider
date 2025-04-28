@@ -15,8 +15,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -42,6 +45,7 @@ fun MyTextField(
             }
         }
     },
+    autoCompleteContentType: ContentType? = null,
     error: InputError? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     imeAction: ImeAction = ImeAction.Next,
@@ -53,7 +57,9 @@ fun MyTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().semantics {
+            autoCompleteContentType?.let { contentType = it }
+        },
         enabled = enabled,
         label = { Text(label) },
         interactionSource = interactionSource,
@@ -92,6 +98,7 @@ fun PasswordTextField(
             )
         }
     },
+    autoCompleteContentType: ContentType? = ContentType.Password,
     error: InputError? = null,
     imeAction: ImeAction = ImeAction.Next,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -108,6 +115,7 @@ fun PasswordTextField(
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         error = error,
+        autoCompleteContentType = autoCompleteContentType,
         visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation. None,
         imeAction = imeAction,
         keyboardType = keyboardType,
