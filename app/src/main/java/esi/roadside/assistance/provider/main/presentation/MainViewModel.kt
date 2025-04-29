@@ -1,6 +1,7 @@
 package esi.roadside.assistance.provider.main.presentation
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,11 +32,13 @@ import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiStat
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileUiState
 import esi.roadside.assistance.provider.main.util.NotificationListener
 import esi.roadside.assistance.provider.main.util.saveClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -55,6 +58,9 @@ class MainViewModel(
     val client = _client.asStateFlow()
 
     private val _profileUiState = MutableStateFlow(ProfileUiState())
+    private val categories = _profileUiState.map {
+        it.user.categories
+    }
     val profileUiState = _profileUiState.asStateFlow()
 
     private val _services = MutableStateFlow(emptyList<Service>())
@@ -78,21 +84,29 @@ class MainViewModel(
     }
 
     init {
-        viewModelScope.launch {
-            context.dataStore.data.collectLatest { userPreferences ->
-                _profileUiState.update {
-                    it.copy(
-                        user = userPreferences.provider.toProviderModel().toProviderUi(),
-                        editUser = userPreferences.provider.toProviderModel().toProviderUi(),
-                        photo = userPreferences.provider.photo ?: ""
+        viewModelScope.launch(Dispatchers.Main) {
+            Log.i("MainViewModel", "init viewModel")
+            Log.i("MainViewModel", "Categories: ${_profileUiState.value.user.categories}")
+            launch {
+                context.dataStore.data.collectLatest { userPreferences ->
+                    _profileUiState.update {
+                        it.copy(
+                            user = userPreferences.provider.toProviderModel().toProviderUi(),
+                            editUser = userPreferences.provider.toProviderModel().toProviderUi(),
+                            photo = userPreferences.provider.photo ?: ""
+                        )
+                    }
+                }
+            }
+            launch {
+                categories.collectLatest {
+                    NotificationListener.listenForNotifications(
+                        _profileUiState.value.user.id,
+                        _profileUiState.value.user.categories,
+                        mapper
                     )
                 }
             }
-            NotificationListener.listenForNotifications(
-                _profileUiState.value.user.id,
-                _profileUiState.value.user.categories,
-                mapper
-            )
             NotificationListener.services.consumeEach { service ->
                 viewModelScope.launch {
                     var distance = Double.POSITIVE_INFINITY
