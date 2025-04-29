@@ -73,7 +73,6 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     snackbarHostState = snackbarHostState,
                     mainViewModel = mainViewModel,
-                    bottomSheetState = bottomSheetState,
                     onAction = mainViewModel::onAction
                 )
             }

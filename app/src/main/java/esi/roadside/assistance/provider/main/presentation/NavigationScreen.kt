@@ -45,7 +45,6 @@ fun NavigationScreen(
     snackbarHostState: SnackbarHostState,
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier,
-    bottomSheetState: SheetState,
     onAction: (Action) -> Unit,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
