@@ -26,3 +26,9 @@ data class UserNotification(
         }.toLocalDateTime().atZone(ZoneId.systemDefault())
     )
 }
+
+@Serializable
+data class PublisherNotification(
+    val providerId: String,
+    val message: String,
+)

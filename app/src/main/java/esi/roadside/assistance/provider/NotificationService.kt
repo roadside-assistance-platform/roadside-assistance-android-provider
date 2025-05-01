@@ -8,10 +8,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import esi.roadside.assistance.provider.core.util.NotificationsReceiver
 
-class NotificationService(
-    private val context: Context,
-
-) {
+class NotificationService(private val context: Context) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     fun showNotification(

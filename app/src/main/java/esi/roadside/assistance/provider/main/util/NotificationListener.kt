@@ -8,6 +8,7 @@ import com.rabbitmq.client.DeliverCallback
 import esi.roadside.assistance.provider.BuildConfig
 import esi.roadside.assistance.provider.core.data.dto.Service
 import esi.roadside.assistance.provider.main.domain.Categories
+import esi.roadside.assistance.provider.main.domain.models.LocationModel
 import esi.roadside.assistance.provider.main.domain.models.TypedNotification
 import esi.roadside.assistance.provider.main.domain.models.UserNotification
 import kotlinx.coroutines.CoroutineScope
@@ -46,14 +47,6 @@ object NotificationListener {
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
-//                        when(deserialized.type) {
-//                            NotificationType.SERVICE -> {
-//                            }
-//                            NotificationType.USER_NOTIFICATION -> {
-//                                val notification = deserialized.data as UserNotification
-//                                _userNotifications.trySend(notification)
-//                            }
-//                        }
                     }
                     channel.basicAck(delivery.envelope.deliveryTag, false)
                 }
@@ -63,5 +56,30 @@ object NotificationListener {
                 channel.basicConsume(queueName, true, consumer, cancelCallback)
             }
         }
+    }
+    fun sendNotification(
+        providerId: String,
+        categories: Set<Categories>,
+        message: String
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val factory = ConnectionFactory()
+            factory.setUri(BuildConfig.CLOUDAMPQ_URL)
+            val connection = factory.newConnection()
+            val channel = connection.createChannel()
+            categories.forEach {
+                val exchangeName = "$it-notifications-exchange"
+                channel.exchangeDeclare(exchangeName, BuiltinExchangeType.FANOUT)
+                channel.basicPublish(exchangeName, "", null, message.toByteArray())
+            }
+        }
+    }
+
+    fun sendLocationUpdate(
+        providerId: String,
+        categories: Set<Categories>,
+        location: LocationModel
+    ) {
+        sendNotification(providerId, categories, location.toString())
     }
 }
