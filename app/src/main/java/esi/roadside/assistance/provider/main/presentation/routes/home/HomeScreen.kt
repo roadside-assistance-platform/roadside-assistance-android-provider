@@ -1,12 +1,13 @@
 package esi.roadside.assistance.provider.main.presentation.routes.home
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,11 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -33,11 +31,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
@@ -63,6 +64,7 @@ import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.data.FollowPuckViewportStateOptions
+import com.mapbox.maps.plugin.viewport.data.OverviewViewportStateOptions
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.main.presentation.Action
 import esi.roadside.assistance.provider.main.presentation.components.ServiceListItem
@@ -77,6 +79,7 @@ fun HomeScreen(
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state = rememberMapViewportState {
         setCameraOptions {
             zoom(2.0)
@@ -91,31 +94,31 @@ fun HomeScreen(
     var routeLine by remember {
         mutableStateOf<LineString?>(null)
     }
-
     var lightPreset by remember {
         mutableStateOf(LightPresetValue.DAY)
     }
 
-//    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-//            routeLine = LineString.fromPolyline(
-//                DirectionsResponse.fromJson(
-//                    AnnotationUtils.loadStringFromAssets(
-//                        context,
-//                        "navigation_route.json"
-//                    )
-//                ).routes()[0].geometry()!!,
-//                6
-//            ).also {
-//                // immediately transition to overview viewport state after route line is available
-//                state.transitionToOverviewState(
-//                    OverviewViewportStateOptions.Builder().geometry(it)
-//                        .padding(EdgeInsets(50.0, 50.0, 50.0, 50.0))
-//                        .build()
-//                )
-//            }
+    LaunchedEffect(uiState.selectedService) {
+        if (uiState.selectedService != null) {
+            val service = uiState.services[uiState.selectedService]
+            val route = service.directions.routes.minByOrNull { it.duration }
+            route?.let { route ->
+                Log.i("MainActivity", "Route: ${route.geometry}")
+                withContext(Dispatchers.IO) {
+                    routeLine = LineString.fromLngLats(route.geometry.coordinates.map {
+                        Point.fromLngLat(it[0], it[1])
+                    }).also {
+                        state.transitionToOverviewState(
+                            OverviewViewportStateOptions.Builder().geometry(it)
+                                .padding(
+                                    EdgeInsets(0.0, 100.0, 350.0, 100.0)
+                                ).build()
+                        )
+                    }
+                }
+            }
+        } else {
+            routeLine = null
         }
     }
     val marker = rememberIconImage(R.drawable.baseline_location_pin_24)
@@ -124,49 +127,60 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     BottomSheetScaffold(
         sheetContent = {
-            Text(
-                stringResource(R.string.nearby_clients),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp).fillMaxWidth()
-            )
-            AnimatedContent(uiState.services) {
-                if (it.isEmpty())
+            AnimatedVisibility(uiState.selectedService == null) {
+                Text(
+                    stringResource(R.string.nearby_clients),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .fillMaxWidth()
+                )
+            }
+            AnimatedContent(uiState.services.isEmpty()) {
+                if (it)
                     Box(Modifier.height(100.dp)) {
                         Text(
                             stringResource(R.string.no_nearby_clients),
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp).fillMaxWidth()
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth()
                         )
                     }
                 else {
-                    LazyColumn(Modifier.fillMaxWidth()) {
+                    LazyColumn(
+                        Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
                         uiState.services.forEachIndexed { index, service ->
                             if (uiState.selectedService?.let { it == index } != false)
-                                item(index) {
+                                item(service.id) {
                                     ServiceListItem(
                                         service,
                                         uiState.selectedService?.let { it == index } == true,
                                         onCancel = {
                                             onAction(Action.UnSelectService)
+                                            scope.launch {
+                                                bottomSheetState.partialExpand()
+                                            }
+                                            followLocation(state) {
+                                                if (it != null) {
+                                                    onAction(Action.SetLocation(it))
+                                                }
+                                            }
                                         },
                                         onAccept = {
                                             onAction(Action.AcceptService(index))
+                                            val intent = Intent(
+                                                Intent.ACTION_VIEW,
+                                                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${service.serviceLocation.latitude},${service.serviceLocation.longitude}")
+                                            )
+                                            context.startActivity(intent)
                                         },
                                         modifier = Modifier.animateItem()
                                     ) {
-                                        scope.launch {
-                                            bottomSheetState.partialExpand()
-                                        }
                                         onAction(Action.SelectService(index))
-                                        state.easeTo(
-                                            CameraOptions
-                                                .Builder()
-                                                .zoom(state.cameraState?.zoom ?: 2.0)
-                                                .center(service.serviceLocation.toPoint())
-                                                .pitch(0.0)
-                                                .bearing(0.0)
-                                                .build()
-                                        )
                                     }
                                 }
                         }
@@ -176,21 +190,7 @@ fun HomeScreen(
         },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 120.dp,
-        modifier = modifier,
-//        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-//        floatingActionButton = {
-//            FloatingActionButton(
-//                onClick = {
-//                    lightPreset = if (lightPreset == LightPresetValue.DAY) {
-//                        LightPresetValue.NIGHT
-//                    } else {
-//                        LightPresetValue.DAY
-//                    }
-//                },
-//            ) {
-//                Text(text = "Toggle light preset")
-//            }
-//        }
+        modifier = modifier
     ) {
         Box(Modifier.fillMaxSize()) {
             MapboxMap(
@@ -212,7 +212,7 @@ fun HomeScreen(
                     Logo(alignment = Alignment.TopStart)
                 },
                 style = {
-                    if (uiState.providerState == ProviderState.NAVIGATING)
+                    if (routeLine != null)
                         NavigationStyle(
                             routeLine = routeLine,
                             progress = progress,
@@ -247,7 +247,9 @@ fun HomeScreen(
                 }
                 MapEffect(Unit) { mapView ->
                     followLocation(state, mapView) {
-                        if (it != null) onAction(Action.SetLocation(it))
+                        if (it != null) {
+                            onAction(Action.SetLocation(it))
+                        }
                     }
                 }
             }
@@ -287,6 +289,8 @@ fun NavigationStyle(
     val geoJsonSource = rememberGeoJsonSourceState {
         lineMetrics = BooleanValue(true)
     }
+    val color = Color(72, 145, 226)
+    val outline = Color(55, 112, 175)
     LaunchedEffect(routeLine) {
         routeLine?.let {
             geoJsonSource.data = GeoJSONData(it)
@@ -329,20 +333,21 @@ fun NavigationStyle(
                     )
                     lineCap = LineCapValue.ROUND
                     lineJoin = LineJoinValue.ROUND
-                    lineGradient = ColorValue(
-                        interpolate {
-                            linear()
-                            lineProgress()
-                            stop {
-                                literal(0)
-                                rgba(47.0, 122.0, 198.0, 1.0)
-                            }
-                            stop {
-                                literal(1.0)
-                                rgba(47.0, 122.0, 198.0, 1.0)
-                            }
-                        }
-                    )
+//                    lineGradient = ColorValue(
+//                        interpolate {
+//                            linear()
+//                            lineProgress()
+//                            stop {
+//                                literal(0)
+//                                rgba(47.0, 122.0, 198.0, 1.0)
+//                            }
+//                            stop {
+//                                literal(1.0)
+//                                rgba(47.0, 122.0, 198.0, 1.0)
+//                            }
+//                        }
+//                    )
+                    lineColor = ColorValue(outline)
                 }
                 LineLayer(
                     sourceState = geoJsonSource
@@ -382,24 +387,25 @@ fun NavigationStyle(
                     )
                     lineCap = LineCapValue.ROUND
                     lineJoin = LineJoinValue.ROUND
-                    lineGradient = ColorValue(
-                        interpolate {
-                            linear()
-                            lineProgress()
-                            // blue
-                            stop { literal(0.0); rgb { literal(6); literal(1); literal(255) } }
-                            // royal blue
-                            stop { literal(0.1); rgb { literal(59); literal(118); literal(227) } }
-                            // cyan
-                            stop { literal(0.3); rgb { literal(7); literal(238); literal(251) } }
-                            // lime
-                            stop { literal(0.5); rgb { literal(0); literal(255); literal(42) } }
-                            // yellow
-                            stop { literal(0.7); rgb { literal(255); literal(252); literal(0) } }
-                            // red
-                            stop { literal(1.0); rgb { literal(255); literal(30); literal(0) } }
-                        }
-                    )
+//                    lineGradient = ColorValue(
+//                        interpolate {
+//                            linear()
+//                            lineProgress()
+//                            // blue
+//                            stop { literal(0.0); rgb { literal(6); literal(1); literal(255) } }
+//                            // royal blue
+//                            stop { literal(0.1); rgb { literal(59); literal(118); literal(227) } }
+//                            // cyan
+//                            stop { literal(0.3); rgb { literal(7); literal(238); literal(251) } }
+//                            // lime
+//                            stop { literal(0.5); rgb { literal(0); literal(255); literal(42) } }
+//                            // yellow
+//                            stop { literal(0.7); rgb { literal(255); literal(252); literal(0) } }
+//                            // red
+//                            stop { literal(1.0); rgb { literal(255); literal(30); literal(0) } }
+//                        }
+//                    )
+                    lineColor = ColorValue(color)
                 }
             }
         }

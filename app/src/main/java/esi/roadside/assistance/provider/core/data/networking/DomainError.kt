@@ -3,6 +3,7 @@ package esi.roadside.assistance.provider.core.data.networking
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.ui.graphics.vector.ImageVector
 import esi.roadside.assistance.provider.R
@@ -22,4 +23,5 @@ enum class DomainError(val text: Int, val description: Int? = null, val icon: Im
     INCORRECT_VERIFICATION_CODE(R.string.incorrect_code, icon = Icons.Default.Email),
     TIMEOUT(R.string.timeout, icon = Icons.Default.Timer),
     SERVER_UNAVAILABLE(R.string.server_unavailable, icon = Icons.Default.Timer),
+    BAD_REQUEST(R.string.bad_request, icon = Icons.Default.Warning),
 }

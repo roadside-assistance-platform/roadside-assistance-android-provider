@@ -11,9 +11,19 @@ import esi.roadside.assistance.provider.core.util.NotificationsReceiver
 class NotificationService(private val context: Context) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    fun getPendingIntent(intent: Intent) =
+        PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
     fun showNotification(
+        id: Int,
         title: String,
         content: String,
+        vararg actions: NotificationCompat.Action
     ) {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         val pendingIntent = intent?.let {
@@ -21,40 +31,33 @@ class NotificationService(private val context: Context) {
                 .addNextIntentWithParentStack(it)
                 .getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE)
         }
-        val acceptPendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(
-                context,
-                NotificationsReceiver::class.java
-            ),
-            PendingIntent.FLAG_IMMUTABLE
-        )
         val notification = NotificationCompat.Builder(
             context,
             CHANNEL_ID,
         )
             .setContentTitle(CHANNEL_NAME)
             .setContentTitle(title)
-            .setContentText(content)
             .setSmallIcon(R.drawable.app_icon)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .addAction(
-                R.drawable.ic_telegram_app,
-                context.getString(R.string.accept),
-                acceptPendingIntent,
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(content)
+                    .setBigContentTitle(title)
+                    .setSummaryText(content)
             )
+            .apply {
+                actions.forEach { addAction(it) }
+            }
             .build()
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        notificationManager.notify(id, notification)
     }
     companion object {
         const val CHANNEL_ID = "esi.roadside.assistance.provider"
         const val CHANNEL_NAME = "Roadside Assistance Provider"
         const val CHANNEL_DESCRIPTION = "Roadside Assistance Provider Notifications"
         const val CHANNEL_IMPORTANCE = NotificationManager.IMPORTANCE_HIGH
-        const val NOTIFICATION_ID = 1
     }
 }

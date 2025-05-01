@@ -7,7 +7,7 @@ fun String.toLocation(): LocationModel {
     require(regex.matches(this)) { "Invalid location format" }
     val location = this.split(",")
     return LocationModel(
-        latitude = location[0].toDouble(),
-        longitude = location[1].toDouble()
+        longitude = location[0].toDouble(),
+        latitude = location[1].toDouble()
     )
 }

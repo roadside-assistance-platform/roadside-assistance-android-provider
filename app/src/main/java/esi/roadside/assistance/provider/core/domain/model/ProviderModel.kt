@@ -2,6 +2,7 @@ package esi.roadside.assistance.provider.core.domain.model
 
 import esi.roadside.assistance.provider.core.data.dto.Provider
 import esi.roadside.assistance.provider.main.domain.Categories
+import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 import esi.roadside.assistance.provider.main.domain.models.ServiceModel
 import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 import java.time.ZonedDateTime
@@ -37,5 +38,13 @@ data class ProviderModel(
         email = email,
         phone = phone,
         categories = categories,
+    )
+    fun toProviderInfo() = ProviderInfo(
+        id = id,
+        fullName = fullName,
+        phone = phone,
+        photo = photo,
+        email = email,
+        categories = categories
     )
 }

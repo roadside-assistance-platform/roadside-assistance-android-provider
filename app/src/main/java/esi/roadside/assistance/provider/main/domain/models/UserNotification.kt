@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
+
 @Serializable
 data class UserNotification(
     val id: String,
@@ -12,7 +13,7 @@ data class UserNotification(
     val isWarning: Boolean,
     val image: String?,
     val createdAt: String
-) {
+): NotificationData {
     fun toUserNotificationModel() = UserNotificationModel(
         id,
         title,
@@ -26,7 +27,6 @@ data class UserNotification(
         }.toLocalDateTime().atZone(ZoneId.systemDefault())
     )
 }
-
 @Serializable
 data class PublisherNotification(
     val providerId: String,

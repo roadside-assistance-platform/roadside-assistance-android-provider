@@ -1,36 +1,40 @@
 package esi.roadside.assistance.provider.main.presentation
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fasterxml.jackson.databind.ObjectMapper
 import esi.roadside.assistance.provider.NotificationService
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.auth.domain.use_case.Cloudinary
 import esi.roadside.assistance.provider.auth.domain.use_case.Update
 import esi.roadside.assistance.provider.auth.util.dataStore
-import esi.roadside.assistance.provider.core.data.dto.Service
+import esi.roadside.assistance.provider.core.data.mappers.toLocation
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.Field
 import esi.roadside.assistance.provider.core.presentation.util.ValidateInput
 import esi.roadside.assistance.provider.core.presentation.util.sendEvent
-import esi.roadside.assistance.provider.main.domain.Categories
+import esi.roadside.assistance.provider.core.util.NotificationsReceiver
+import esi.roadside.assistance.provider.main.data.dto.DirectionsResponse
+import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
+import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
 import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
 import esi.roadside.assistance.provider.main.domain.models.toLocationModel
 import esi.roadside.assistance.provider.main.domain.use_cases.AcceptService
-import esi.roadside.assistance.provider.main.domain.use_cases.DistanceCalculation
+import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
 import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileUiState
-import esi.roadside.assistance.provider.main.util.NotificationListener
+import esi.roadside.assistance.provider.main.util.QueuesManager
 import esi.roadside.assistance.provider.main.util.saveClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.consumeEach
@@ -41,17 +45,19 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 class MainViewModel(
     private val context: Context,
-    val mapper: ObjectMapper,
     val cloudinary: Cloudinary,
     val updateUseCase: Update,
     val acceptServiceUseCase: AcceptService,
     val logoutUseCase: Logout,
     val reverseGeocodingUseCase: ReverseGeocoding,
-    val distanceCalculationUseCase: DistanceCalculation,
-    val notificationService: NotificationService
+    val directionsUseCaseUseCase: DirectionsUseCase,
+    val notificationService: NotificationService,
+    val queuesManager: QueuesManager,
 ): ViewModel() {
 
     private val _client = MutableStateFlow(ProviderUi())
@@ -63,30 +69,19 @@ class MainViewModel(
     }
     val profileUiState = _profileUiState.asStateFlow()
 
-    private val _services = MutableStateFlow(emptyList<Service>())
+    private val _services = MutableStateFlow(emptyList<NotificationServiceModel>())
 
     private val _userNotification = MutableStateFlow(emptyList<UserNotificationModel>())
     val userNotification = _userNotification.asStateFlow()
 
     private val _homeUiState = MutableStateFlow(HomeUiState())
     val homeUiState = combine(_homeUiState, _services) { state, services ->
-        return@combine state.copy(
-            services = services
-                .map { service ->
-                    var location = ""
-                    reverseGeocodingUseCase(LocationModel.fromString(service.serviceLocation))
-                        .onSuccess {
-                            location = it
-                        }
-                    service.toServiceModel(location)
-                }
-        )
+        state.copy(services = services)
     }
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
             Log.i("MainViewModel", "init viewModel")
-            Log.i("MainViewModel", "Categories: ${_profileUiState.value.user.categories}")
             launch {
                 context.dataStore.data.collectLatest { userPreferences ->
                     _profileUiState.update {
@@ -99,41 +94,66 @@ class MainViewModel(
                 }
             }
             launch {
-                categories.collectLatest {
-                    NotificationListener.listenForNotifications(
-                        _profileUiState.value.user.id,
-                        _profileUiState.value.user.categories,
-                        mapper
-                    )
-                }
-            }
-            NotificationListener.services.consumeEach { service ->
-                viewModelScope.launch {
-                    var distance = Double.POSITIVE_INFINITY
-                    _homeUiState.value.location?.let { location ->
-                        distanceCalculationUseCase(
-                            LocationModel.fromString(service.serviceLocation)
-                                    to location.toLocationModel()
-                        ).onSuccess {
-                            distance = it
+                categories.collectLatest { categories ->
+                    Log.i("MainViewModel", "Categories: $categories")
+                    withContext(Dispatchers.IO) {
+                        if (categories.isNotEmpty()) {
+                            queuesManager.consumeCategoryQueues(categories)
                         }
                     }
-                    if ((distance / 1000) <= 10) {
-                        _services.update {
-                            it + service
+                }
+            }
+            queuesManager.services.consumeEach { service ->
+                viewModelScope.launch {
+                    var directions = JsonDirectionsResponse("", emptyList(), "", emptyList())
+                    Log.i("MainViewModel", "Location: ${_homeUiState.value.location}")
+                    _homeUiState.value.location?.let { location ->
+                        directionsUseCaseUseCase(
+                            location.toLocationModel() to service.serviceLocation.toLocation()
+                        ).onSuccess {
+                            directions = it
                         }
+                    }
+                    val distance = directions.routes.minOfOrNull { it.distance } ?: -1.0
+                    if (distance / 1000 <= 10) {
+                        var locationString = ""
+                        reverseGeocodingUseCase(service.serviceLocation.toLocation()).onSuccess {
+                            locationString = it
+                        }
+                        val serviceModel = service.toNotificationServiceModel(
+                            directions = directions,
+                            locationString = locationString,
+                        )
+                        _services.value = _services.value + serviceModel
+                        val sb = StringBuilder()
+                        if (serviceModel.serviceLocationString.isNotEmpty())
+                            sb.append("Location: ${serviceModel.serviceLocationString}.\n")
+                        if (distance >= 0)
+                            sb.append("Distance: ${(distance / 1000).roundToInt()} km.\n")
+                        sb.append("Category: ${context.getString(serviceModel.category.text)}.\n")
                         notificationService.showNotification(
-                            "You have new request",
-                            "It's ${distance / 1000} km away"
+                            _services.value.size,
+                            "New service request from ${serviceModel.client.fullName}.\n",
+                            sb.toString(),
+                            NotificationCompat.Action(
+                                R.drawable.baseline_check_24,
+                                context.getString(R.string.accept),
+                                notificationService.getPendingIntent(
+                                    Intent(
+                                        context,
+                                        NotificationsReceiver::class.java
+                                    )
+                                )
+                            )
                         )
                     }
                 }
             }
-            NotificationListener.userNotifications.consumeEach { notification ->
-                _userNotification.update {
-                    it + notification.toUserNotificationModel()
-                }
-            }
+//            NotificationListener.userNotifications.consumeEach { notification ->
+//                _userNotification.update {
+//                    it + notification.toUserNotificationModel()
+//                }
+//            }
         }
     }
 
@@ -259,6 +279,9 @@ class MainViewModel(
                 _homeUiState.update {
                     it.copy(selectedService = null)
                 }
+            }
+            is Action.SendEvent -> {
+                sendEvent(action.event)
             }
         }
     }

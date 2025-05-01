@@ -9,9 +9,12 @@ import esi.roadside.assistance.provider.core.data.networking.constructUrl
 import esi.roadside.assistance.provider.core.data.networking.safeCall
 import esi.roadside.assistance.provider.core.domain.util.Result
 import esi.roadside.assistance.provider.core.domain.util.map
+import esi.roadside.assistance.provider.main.data.dto.DirectionsResponse
+import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
 import esi.roadside.assistance.provider.main.data.dto.LocationResponse
 import esi.roadside.assistance.provider.main.data.dto.Route
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
+import esi.roadside.assistance.provider.main.domain.models.geocoding.ReverseGeocodingResponse
 import esi.roadside.assistance.provider.main.domain.repository.GeocodingRepo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -23,34 +26,23 @@ class GeocodingRepoImpl(
     private val client: HttpClient,
 ): GeocodingRepo {
     override suspend fun getLocationString(request: LocationModel): Result<String, DomainError> {
-        return safeCall<List<LocationResponse>> {
-            client.get(constructUrl(Endpoints.GET_LOCATION_STRING, BaseUrls.MAPBOX_GEOCODING)) {
-                parameters {
-                    append("access_token", context.getString(R.string.mapbox_access_token))
-                    append("longitude", "${request.longitude}")
-                    append("latitude", "${request.latitude}")
-                    append("types", "address")
-                }
-            }.body()
+        return safeCall<ReverseGeocodingResponse> {
+            client.get(constructUrl(Endpoints.getLocationStringEndpoint(request.longitude, request.latitude, context), BaseUrls.MAPBOX_GEOCODING)).body()
         }.map {
-            it.first().q
+            it.features.firstOrNull {
+                it.properties.full_address.isNotEmpty()
+            }?.properties?.full_address ?: ""
         }
     }
 
-    override suspend fun getDistance(request: Pair<LocationModel, LocationModel>): Result<Double, DomainError> {
-        return safeCall<List<Route>> {
+        override suspend fun getDistance(request: Pair<LocationModel, LocationModel>): Result<JsonDirectionsResponse, DomainError> {
+        return safeCall<JsonDirectionsResponse> {
             client.get(
                 constructUrl(
-                    Endpoints.getRoutesEndpoint("driving", request),
-                    BaseUrls.MAPBOX_GEOCODING
+                    Endpoints.getRoutesEndpoint("driving", request, context),
+                    BaseUrls.MAPBOX_DRIVING
                 )
-            )  {
-                parameters {
-                    append("access_token", context.getString(R.string.mapbox_access_token))
-                }
-            }.body()
-        }.map {
-            it.minOf { it.distance }
+            ).body()
         }
     }
 }
