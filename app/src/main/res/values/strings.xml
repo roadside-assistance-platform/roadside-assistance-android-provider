@@ -324,4 +324,8 @@
     <string name="timeout">Connection timed out</string>
     <string name="select_at_least_category">Select at least one category</string>
     <string name="server_unavailable">Server is currently unavailabe, try again later</string>
+    <string name="bad_request">Bad request</string>
+    <string name="no_description">No description available</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="google_maps_not_installed">Looks like google maps is not available</string>
 </resources>

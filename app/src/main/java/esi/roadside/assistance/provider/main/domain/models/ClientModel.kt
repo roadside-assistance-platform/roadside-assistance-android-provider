@@ -8,12 +8,12 @@ import java.time.ZonedDateTime
 @Serializable
 data class ClientInfo(
     val id: String = "",
-    val fullName: String,
-    val email: String,
-    val phone: String,
-    val photo: String,
-    val createdAt: String,
-    val updatedAt: String,
+    val fullName: String = "",
+    val email: String = "",
+    val phone: String = "",
+    val photo: String = "",
+    val createdAt: String = "",
+    val updatedAt: String = "",
 ) {
     fun toClientInfoModel() = ClientInfoModel(
         id = id,

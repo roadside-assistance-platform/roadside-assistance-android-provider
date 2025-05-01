@@ -1,0 +1,9 @@
+package esi.roadside.assistance.provider.main.domain.models.geocoding
+
+data class Region(
+    val mapbox_id: String,
+    val name: String,
+    val region_code: String,
+    val region_code_full: String,
+    val wikidata_id: String
+)
