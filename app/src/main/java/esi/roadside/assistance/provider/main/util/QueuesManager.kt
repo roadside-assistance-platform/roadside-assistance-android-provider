@@ -37,8 +37,15 @@ class QueuesManager() {
     }
 
     fun close() {
-        channel?.close()
-        channel = null
+        try {
+            if (channel == null) return
+            if (!channel!!.isOpen) return
+            channel!!.close()
+        } catch (_: Exception) {
+            // Ignore exception
+        } finally {
+            channel = null
+        }
     }
 
     private fun consume(queueName: String, exchanges: List<String> = emptyList()) {
