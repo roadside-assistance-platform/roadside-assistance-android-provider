@@ -11,15 +11,8 @@ data class LocationModel(
 ): NotificationData {
     companion object {
         fun fromString(location: String) = location.toLocation()
-        fun fromPoint(point: Point) = LocationModel(
-            longitude = point.longitude(),
-            latitude = point.latitude(),
-        )
     }
-
     override fun toString() = "${longitude},${latitude}"
-
-    fun toPoint() = Point.fromLngLat(longitude, latitude)
 }
 
 fun Point.toLocationModel() = LocationModel(

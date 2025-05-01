@@ -19,3 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep public class esi.roadside.assistance.provider.auth.presentation.NavRoutes
+-keep public class esi.roadside.assistance.provider.auth.presentation.NavRoutes$*
+-keep public class esi.roadside.assistance.provider.main.presentation.NavRoutes
+-keep public class esi.roadside.assistance.provider.main.presentation.NavRoutes$*
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** {
+  *;
+}
+-keepnames class esi.roadside.assistance.provider.auth.presentation.NavRoutes
+-keepnames class * extends esi.roadside.assistance.provider.auth.presentation.NavRoutes
+-keep public class esi.roadside.assistance.provider.main.domain.PolymorphicNotification
+-keep public class esi.roadside.assistance.provider.main.domain.PolymorphicNotification.*

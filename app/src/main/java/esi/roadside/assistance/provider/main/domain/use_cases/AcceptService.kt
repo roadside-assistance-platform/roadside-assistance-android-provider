@@ -5,5 +5,5 @@ import esi.roadside.assistance.provider.main.domain.repository.GeocodingRepo
 import esi.roadside.assistance.provider.main.domain.repository.MainRepo
 
 class AcceptService(private val repo: MainRepo) {
-    suspend operator fun invoke(request: String) = repo.acceptService(request)
+    suspend operator fun invoke(request: Pair<String, String>) = repo.acceptService(request)
 }

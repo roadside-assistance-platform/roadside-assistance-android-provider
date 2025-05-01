@@ -1,5 +1,8 @@
 package esi.roadside.assistance.provider.main.domain.models.geocoding
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Country(
     val country_code: String,
     val country_code_alpha_3: String,

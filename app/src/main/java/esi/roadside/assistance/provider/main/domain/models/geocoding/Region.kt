@@ -1,5 +1,8 @@
 package esi.roadside.assistance.provider.main.domain.models.geocoding
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Region(
     val mapbox_id: String,
     val name: String,

@@ -7,6 +7,6 @@ import esi.roadside.assistance.provider.main.domain.models.ServiceModel
 
 interface MainRepo {
     suspend fun getClientInfo(request: String): Result<ClientInfoModel, DomainError>
-    suspend fun acceptService(request: String): Result<ServiceModel, DomainError>
+    suspend fun acceptService(request: Pair<String, String>): Result<ServiceModel, DomainError>
     suspend fun logout()
 }

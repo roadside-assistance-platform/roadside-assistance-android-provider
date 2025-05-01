@@ -28,7 +28,7 @@ sealed interface PolymorphicNotification {
     data class Service(
         val id: String = "",
         val client: ClientInfo = ClientInfo(),
-        val providerId: String? = null,
+        val provider: ProviderInfo? = null,
         val price: Int = 0,
         val description: String = "",
         val serviceRating: Float = 0f,
@@ -37,25 +37,26 @@ sealed interface PolymorphicNotification {
         val serviceCategory: Categories = Categories.OTHER,
         val createdAt: Long = 0,
         val updatedAt: Long = 0,
-        val comments: List<Comment> = emptyList()
+        val comments: List<Comment> = emptyList(),
     ) : PolymorphicNotification {
-        fun toNotificationServiceModel(locationString: String, directions: JsonDirectionsResponse)
-        = NotificationServiceModel(
-            id = id,
-            client = client,
-            providerId = providerId,
-            price = price,
-            serviceRating = serviceRating,
-            serviceLocation = LocationModel.fromString(serviceLocation),
-            serviceLocationString = locationString,
-            done = done,
-            directions = directions,
-            category = serviceCategory,
-            createdAt = Instant.ofEpochMilli(createdAt).atZone(ZoneId.systemDefault()),
-            updatedAt = Instant.ofEpochMilli(updatedAt).atZone(ZoneId.systemDefault()),
-            comments = comments.map { it.toCommentModel() },
-            description = description
-        )
+        fun toNotificationServiceModel(directions: JsonDirectionsResponse, locationString: String): NotificationServiceModel {
+            return NotificationServiceModel(
+                id = id,
+                client = client,
+                providerId = provider?.id,
+                price = price,
+                description = description,
+                serviceRating = serviceRating,
+                serviceLocation = LocationModel.fromString(serviceLocation),
+                serviceLocationString = locationString,
+                done = done,
+                category = serviceCategory,
+                createdAt = Instant.ofEpochMilli(createdAt).atZone(ZoneId.systemDefault()),
+                updatedAt = Instant.ofEpochMilli(updatedAt).atZone(ZoneId.systemDefault()),
+                comments = comments.map { it.toCommentModel() },
+                directions = directions,
+            )
+        }
     }
 
     @Serializable
@@ -76,6 +77,8 @@ sealed interface PolymorphicNotification {
 
     @Serializable
     data class ServiceAcceptance(
+        val id: String,
+        val category: Categories,
         val provider: ProviderInfo,
     ) : PolymorphicNotification
 
@@ -84,8 +87,14 @@ sealed interface PolymorphicNotification {
 
     @Serializable
     data class ServiceDone(
-        val done: Boolean,
-        val price: Int
+        val price: Int,
+        val rating: Double?
+    ) : PolymorphicNotification
+
+    @Serializable
+    data class ServiceRemove(
+        val serviceId: String,
+        val exception: String?
     ) : PolymorphicNotification
 
 
@@ -105,6 +114,7 @@ sealed interface PolymorphicNotification {
                 polymorphic(PolymorphicNotification::class, ServiceAcceptance::class, ServiceAcceptance.serializer())
                 polymorphic(PolymorphicNotification::class, ServiceDone::class, ServiceDone.serializer())
                 polymorphic(PolymorphicNotification::class, ProviderArrived::class, ProviderArrived.serializer())
+                polymorphic(PolymorphicNotification::class, ServiceRemove::class, ServiceRemove.serializer())
             }
         }
 
@@ -119,14 +129,16 @@ sealed interface PolymorphicNotification {
 
         override fun deserialize(decoder: Decoder): PolymorphicNotification {
             val jsonElement = (decoder as JsonDecoder).decodeJsonElement()
-            println("${jsonElement.jsonObject["polymorphicType"]?.jsonPrimitive?.content}")
-            return when (val itemType = jsonElement.jsonObject["polymorphicType"]?.jsonPrimitive?.content) {
-                Service::class.qualifiedName -> json.decodeFromJsonElement(Service.serializer(), jsonElement)
-                UserNotification::class.qualifiedName -> json.decodeFromJsonElement(UserNotification.serializer(), jsonElement)
-                LocationUpdate::class.qualifiedName -> json.decodeFromJsonElement(LocationUpdate.serializer(), jsonElement)
-                ServiceAcceptance::class.qualifiedName -> json.decodeFromJsonElement(ServiceAcceptance.serializer(), jsonElement)
-                ServiceDone::class.qualifiedName -> json.decodeFromJsonElement(ServiceDone.serializer(), jsonElement)
-                ProviderArrived::class.qualifiedName -> json.decodeFromJsonElement(ProviderArrived.serializer(), jsonElement)
+            return when (
+                val itemType = jsonElement.jsonObject["polymorphicType"]?.jsonPrimitive?.content?.substringAfterLast(".")
+            ) {
+                Service::class.simpleName -> json.decodeFromJsonElement(Service.serializer(), jsonElement)
+                UserNotification::class.simpleName -> json.decodeFromJsonElement(UserNotification.serializer(), jsonElement)
+                LocationUpdate::class.simpleName -> json.decodeFromJsonElement(LocationUpdate.serializer(), jsonElement)
+                ServiceAcceptance::class.simpleName -> json.decodeFromJsonElement(ServiceAcceptance.serializer(), jsonElement)
+                ServiceDone::class.simpleName -> json.decodeFromJsonElement(ServiceDone.serializer(), jsonElement)
+                ProviderArrived::class.simpleName -> json.decodeFromJsonElement(ProviderArrived.serializer(), jsonElement)
+                ServiceRemove::class.simpleName -> json.decodeFromJsonElement(ServiceRemove.serializer(), jsonElement)
                 else -> throw SerializationException("Unknown itemType: $itemType")
             }
         }

@@ -328,4 +328,19 @@
     <string name="no_description">No description available</string>
     <string name="unavailable">Unavailable</string>
     <string name="google_maps_not_installed">Looks like google maps is not available</string>
+    <string name="navigating">Navigating …</string>
+    <string name="working">Working …</string>
+    <string name="arrived">Arrived to client</string>
+    <string name="open_in_google_maps">Google Maps</string>
+    <string name="eta_not_available">Can\'t calculate ETA</string>
+    <string name="working_description">When you finish your work, ask the client to approve it</string>
+    <string name="no_rating">The client didn\'t submit the rating</string>
+    <string name="dzd">%1$s DZD</string>
+    <string name="you_earned">You\'ve earned</string>
+    <string name="max_distance_filter">Distance limit</string>
+    <string name="max_distance_filter_desc">Filter received assistance request by distance limit</string>
+    <string name="max_distance">Maximum distance</string>
+    <string name="int_km">%1$s km</string>
+    <string name="max_distance_desc">Set the maximum distance between you and the target</string>
+    <string name="maps_settings">Maps settings</string>
 </resources>

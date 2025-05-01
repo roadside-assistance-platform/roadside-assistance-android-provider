@@ -10,6 +10,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DesignServices
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.QuestionMark
@@ -82,6 +83,16 @@ object Settings {
             )
         )
     )
+    val mapsSettings = LargeSettingsGroup(
+        R.string.maps_settings,
+        listOf(
+            LargeSettingsItem(
+                R.string.maps_settings,
+                Icons.Outlined.Map,
+                NavRoutes.MapsSettings
+            ),
+        )
+    )
     val legalSettings = LargeSettingsGroup(
         R.string.legal,
         listOf(
@@ -107,7 +118,7 @@ object Settings {
             )
         )
     )
-    val groups = listOf(accountSettings, globalSettings, legalSettings, supportSettings)
+    val groups = listOf(accountSettings, globalSettings, mapsSettings, legalSettings, supportSettings)
 
     enum class DeveloperType(val label: String, val icon: ImageVector) {
         AndroidDeveloper("Android Developer", Icons.Outlined.Android),

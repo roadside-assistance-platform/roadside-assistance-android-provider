@@ -2,9 +2,11 @@ package esi.roadside.assistance.provider.core.data.dto
 
 import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.main.domain.Categories
+import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import kotlin.String
 
 @Serializable
 data class Provider(
@@ -38,5 +40,13 @@ data class Provider(
         } catch(_: Exception) {
             OffsetDateTime.now()
         }.toLocalDateTime().atZone(ZoneId.systemDefault())
+    )
+    fun toProviderInfo() = ProviderInfo(
+        id = id,
+        fullName = fullName,
+        phone = phone,
+        photo = photo ?: "",
+        email = email,
+        categories = serviceCategories,
     )
 }

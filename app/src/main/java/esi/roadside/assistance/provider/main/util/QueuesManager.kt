@@ -10,6 +10,7 @@ import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
+import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -20,19 +21,15 @@ class QueuesManager() {
     private val _userNotifications = Channel<PolymorphicNotification.UserNotification>()
     private val _services = Channel<PolymorphicNotification.Service>()
     val services = _services
+    private val _serviceDone = Channel<PolymorphicNotification.ServiceDone>()
+    val serviceDone = _serviceDone
+    private val _serviceRemove = Channel<PolymorphicNotification.ServiceRemove>()
+    val serviceRemove = _serviceRemove
     var channel: com.rabbitmq.client.Channel? = null
-
-    init {
-        connect()
-    }
-
-    fun finalize() {
-        close()
-    }
 
     private fun connect() : com.rabbitmq.client.Channel {
         if (channel == null)
-            ConnectionFactory().apply {
+            channel = ConnectionFactory().apply {
                 setUri(BuildConfig.CLOUDAMPQ_URL)
                 useSslProtocol()
             }.newConnection().createChannel()
@@ -57,7 +54,8 @@ class QueuesManager() {
                     when(deserialized) {
                         is PolymorphicNotification.Service -> _services.trySend(deserialized)
                         is PolymorphicNotification.UserNotification -> _userNotifications.trySend(deserialized)
-                        is PolymorphicNotification.ServiceDone -> TODO()
+                        is PolymorphicNotification.ServiceDone -> _serviceDone.trySend(deserialized)
+                        is PolymorphicNotification.ServiceRemove -> _serviceRemove.trySend(deserialized)
                         else -> return@let
                     }
                 } catch (e: Exception) {
@@ -122,6 +120,12 @@ class QueuesManager() {
 fun main() = runBlocking {
     val queuesManager = QueuesManager()
     val categories = setOf(Categories.TOWING)
+    val client = ClientInfo(
+        "1234567",
+        "User",
+        "email@example.com",
+        "0123456789",
+    )
     val userNotification = PolymorphicNotification.UserNotification(
             id = "123",
             title = "New notification",
@@ -131,6 +135,7 @@ fun main() = runBlocking {
             createdAt = "2023-10-01T12:00:00Z"
         )
     queuesManager.consumeCategoryQueues(categories)
+    queuesManager.consumeUserNotifications(client.id, "client")
     queuesManager.publishUserNotification(userNotification.id, "provider", userNotification)
     delay(1000L)
     repeat(10) {
@@ -140,14 +145,9 @@ fun main() = runBlocking {
             description = "Towing service",
             serviceCategory = category,
             serviceLocation = "${LocationModel(-0.653163, 35.214580)}",
-            providerId = "456",
+            provider = null,
             price = 100,
-            client = ClientInfo(
-                "id",
-                "User $it",
-                "email@example.com",
-                "0123456789",
-            ),
+            client = client,
             serviceRating = 5f,
             done = false,
             comments = emptyList()

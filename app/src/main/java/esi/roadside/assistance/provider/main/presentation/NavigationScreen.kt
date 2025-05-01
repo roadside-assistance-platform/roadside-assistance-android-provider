@@ -4,26 +4,37 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
+import esi.roadside.assistance.provider.settings.presentation.MapsSettingsScreen
+import esi.roadside.assistance.provider.R
+import esi.roadside.assistance.provider.core.presentation.components.Dialog
 import esi.roadside.assistance.provider.core.util.intUpDownTransSpec
+import esi.roadside.assistance.provider.main.presentation.components.RatingBar
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeScreen
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationDetails
@@ -66,6 +77,7 @@ fun NavigationScreen(
                 }
         } != false
     val homeUiState by mainViewModel.homeUiState.collectAsState(HomeUiState())
+    val currentService by mainViewModel.currentService.collectAsState(null)
     val userNotification by mainViewModel.userNotification.collectAsState()
     val profileUiState by mainViewModel.profileUiState.collectAsState()
     val navigationBarVisible = isParent and ((currentNavRoute != Routes.PROFILE) or !profileUiState.enableEditing)
@@ -109,7 +121,7 @@ fun NavigationScreen(
         ) {
             navigation<NavRoutes.Home>(NavRoutes.Map) {
                 composable<NavRoutes.Map> {
-                    HomeScreen(homeUiState, onAction)
+                    HomeScreen(homeUiState, currentService, onAction)
                 }
             }
             navigation<NavRoutes.Notifications>(NavRoutes.NotificationsList) {
@@ -141,6 +153,9 @@ fun NavigationScreen(
                 composable<NavRoutes.CustomizeApp> {
                     CustomizeAppScreen()
                 }
+                composable<NavRoutes.MapsSettings> {
+                    MapsSettingsScreen()
+                }
                 composable<NavRoutes.Language> {
                     LanguageScreen()
                 }
@@ -157,6 +172,49 @@ fun NavigationScreen(
                     // HelpScreen()
                 }
             }
+        }
+    }
+    Dialog(
+        visible = homeUiState.finishDialogVisible,
+        onDismissRequest = {
+            mainViewModel.onAction(Action.HideFinishDialog)
+        },
+        okListener = {
+            mainViewModel.onAction(Action.HideFinishDialog)
+        },
+    ) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                stringResource(R.string.you_earned),
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                stringResource(R.string.dzd, homeUiState.price),
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge,
+            )
+            homeUiState.rating?.let {
+                RatingBar(
+                    it,
+                    {},
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    starsColor = MaterialTheme.colorScheme.tertiary
+                )
+            } ?: Text(
+                stringResource(R.string.no_rating),
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

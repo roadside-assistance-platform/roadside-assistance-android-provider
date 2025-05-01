@@ -4,6 +4,7 @@ import android.net.Uri
 import esi.roadside.assistance.provider.auth.domain.models.UpdateModel
 import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
+import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 
 data class ProviderUi(
     val id: String = "",

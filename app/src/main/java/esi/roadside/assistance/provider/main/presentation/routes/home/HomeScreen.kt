@@ -1,23 +1,19 @@
 package esi.roadside.assistance.provider.main.presentation.routes.home
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -27,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -66,16 +62,20 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.data.FollowPuckViewportStateOptions
 import com.mapbox.maps.plugin.viewport.data.OverviewViewportStateOptions
 import esi.roadside.assistance.provider.R
+import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
 import esi.roadside.assistance.provider.main.presentation.Action
-import esi.roadside.assistance.provider.main.presentation.components.ServiceListItem
+import esi.roadside.assistance.provider.main.presentation.sheet.IdleScreen
+import esi.roadside.assistance.provider.main.presentation.sheet.NavigatingScreen
+import esi.roadside.assistance.provider.main.presentation.sheet.WorkingScreen
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    currentService: NotificationServiceModel?,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -98,33 +98,28 @@ fun HomeScreen(
         mutableStateOf(LightPresetValue.DAY)
     }
 
-    LaunchedEffect(uiState.selectedService) {
-        if (uiState.selectedService != null) {
-            val service = uiState.services[uiState.selectedService]
-            val route = service.directions.routes.minByOrNull { it.duration }
-            route?.let { route ->
-                Log.i("MainActivity", "Route: ${route.geometry}")
-                withContext(Dispatchers.IO) {
-                    routeLine = LineString.fromLngLats(route.geometry.coordinates.map {
-                        Point.fromLngLat(it[0], it[1])
-                    }).also {
-                        state.transitionToOverviewState(
-                            OverviewViewportStateOptions.Builder().geometry(it)
-                                .padding(
-                                    EdgeInsets(0.0, 100.0, 350.0, 100.0)
-                                ).build()
-                        )
-                    }
+    LaunchedEffect(uiState.directions) {
+        routeLine = uiState.directions?.let { route ->
+            Log.i("MainActivity", "Route: ${route.geometry}")
+            withContext(Dispatchers.IO) {
+                LineString.fromLngLats(route.geometry.coordinates.map {
+                    Point.fromLngLat(it[0], it[1])
+                }).also {
+                    state.transitionToOverviewState(
+                        OverviewViewportStateOptions.Builder().geometry(it)
+                            .padding(
+                                EdgeInsets(0.0, 100.0, 350.0, 100.0)
+                            ).build()
+                    )
                 }
             }
-        } else {
-            routeLine = null
         }
     }
     val marker = rememberIconImage(R.drawable.baseline_location_pin_24)
-    val bottomSheetState = rememberStandardBottomSheetState()
+    val bottomSheetState = rememberStandardBottomSheetState(confirmValueChange = {
+        it != SheetValue.Hidden
+    })
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
-    val scope = rememberCoroutineScope()
     BottomSheetScaffold(
         sheetContent = {
             AnimatedVisibility(uiState.selectedService == null) {
@@ -136,57 +131,38 @@ fun HomeScreen(
                         .fillMaxWidth()
                 )
             }
-            AnimatedContent(uiState.services.isEmpty()) {
-                if (it)
-                    Box(Modifier.height(100.dp)) {
-                        Text(
-                            stringResource(R.string.no_nearby_clients),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                        )
-                    }
-                else {
-                    LazyColumn(
-                        Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        uiState.services.forEachIndexed { index, service ->
-                            if (uiState.selectedService?.let { it == index } != false)
-                                item(service.id) {
-                                    ServiceListItem(
-                                        service,
-                                        uiState.selectedService?.let { it == index } == true,
-                                        onCancel = {
-                                            onAction(Action.UnSelectService)
-                                            scope.launch {
-                                                bottomSheetState.partialExpand()
-                                            }
-                                            followLocation(state) {
-                                                if (it != null) {
-                                                    onAction(Action.SetLocation(it))
-                                                }
-                                            }
-                                        },
-                                        onAccept = {
-                                            onAction(Action.AcceptService(index))
-                                            val intent = Intent(
-                                                Intent.ACTION_VIEW,
-                                                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${service.serviceLocation.latitude},${service.serviceLocation.longitude}")
-                                            )
-                                            context.startActivity(intent)
-                                        },
-                                        modifier = Modifier.animateItem()
-                                    ) {
-                                        onAction(Action.SelectService(index))
-                                    }
-                                }
+            AnimatedContent(uiState.providerState) {
+                when(it) {
+                    ProviderState.IDLE -> IdleScreen(
+                        uiState.services,
+                        uiState.selectedService,
+                        onAction,
+                        state,
+                        bottomSheetState,
+                    )
+                    ProviderState.NAVIGATING -> NavigatingScreen(
+                        uiState.directions?.let {
+                            (uiState.directions.duration / 60).roundToInt()
+                        },
+                        {
+                            currentService?.let {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    "https://www.google.com/maps/dir/?api=1&destination=${it.serviceLocation.latitude},${it.serviceLocation.longitude}".toUri()
+                                )
+                                context.startActivity(intent)
+                            }
                         }
+                    ) {
+                        onAction(Action.Arrived)
+                    }
+                    ProviderState.WORKING -> WorkingScreen()
+                    ProviderState.COMPLETED -> {
+
                     }
                 }
             }
+
         },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 120.dp,

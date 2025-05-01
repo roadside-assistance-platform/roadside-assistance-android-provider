@@ -8,6 +8,5 @@ import esi.roadside.assistance.provider.NotificationService
 class NotificationsReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val service = NotificationService(context!!)
-
     }
 }
