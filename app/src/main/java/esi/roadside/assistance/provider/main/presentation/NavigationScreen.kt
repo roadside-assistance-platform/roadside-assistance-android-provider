@@ -37,6 +37,7 @@ import esi.roadside.assistance.provider.core.util.intUpDownTransSpec
 import esi.roadside.assistance.provider.main.presentation.components.RatingBar
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeScreen
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
+import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
 import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationDetails
 import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationsScreen
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileScreen
@@ -175,7 +176,8 @@ fun NavigationScreen(
         }
     }
     Dialog(
-        visible = homeUiState.finishDialogVisible,
+        title = stringResource(R.string.service_completed),
+        visible = homeUiState.providerState == ProviderState.COMPLETED,
         onDismissRequest = {
             mainViewModel.onAction(Action.HideFinishDialog)
         },
@@ -186,7 +188,7 @@ fun NavigationScreen(
         Column(
             Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
                 stringResource(R.string.you_earned),

@@ -22,7 +22,6 @@ data class HomeUiState(
     val location: Point? = null,
     val directions: RouteX? = null,
     val loading: Boolean = false,
-    val finishDialogVisible: Boolean = false,
     val price: Int = 0,
     val rating: Double? = null
 )

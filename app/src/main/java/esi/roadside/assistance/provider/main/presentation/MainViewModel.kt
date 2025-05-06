@@ -41,7 +41,9 @@ import esi.roadside.assistance.provider.main.presentation.models.ProviderUi
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileUiState
+import esi.roadside.assistance.provider.main.util.NotificationManager
 import esi.roadside.assistance.provider.main.util.QueuesManager
+import esi.roadside.assistance.provider.main.util.ServiceManager
 import esi.roadside.assistance.provider.main.util.saveClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.consumeEach
@@ -60,23 +62,20 @@ import kotlin.math.roundToInt
 class MainViewModel(
     private val context: Context,
     val cloudinary: Cloudinary,
+    val serviceManager: ServiceManager,
     val updateUseCase: Update,
     val acceptServiceUseCase: AcceptService,
     val logoutUseCase: Logout,
-    val reverseGeocodingUseCase: ReverseGeocoding,
     val directionsUseCaseUseCase: DirectionsUseCase,
-    val notificationService: NotificationService,
+    val notificationManager: NotificationManager,
     val queuesManager: QueuesManager,
     val dataStore: SettingsDataStore,
 ): ViewModel() {
-
     private val _client = MutableStateFlow(ProviderUi())
     val client = _client.asStateFlow()
 
     private val _profileUiState = MutableStateFlow(ProfileUiState())
-    private val categories = _profileUiState.map {
-        it.user.categories
-    }
+    private val categories = _profileUiState.map { it.user.categories }
     val profileUiState = _profileUiState.asStateFlow()
     private val _provider = MutableStateFlow<Provider?>(null)
 
@@ -114,7 +113,7 @@ class MainViewModel(
                     }
                 }
             }
-            launch {
+            launch(Dispatchers.IO) {
                 categories.collectLatest { categories ->
                     Log.i("MainViewModel", "Categories: $categories")
                     withContext(Dispatchers.IO) {
@@ -125,108 +124,92 @@ class MainViewModel(
                 }
             }
             launch(Dispatchers.IO) {
-                queuesManager.services.consumeEach { service ->
-                    viewModelScope.launch {
-                        var directions = JsonDirectionsResponse("", emptyList(), "", emptyList())
-                        Log.i("MainViewModel", "Location: ${_homeUiState.value.location}")
-                        _homeUiState.value.location?.let { location ->
-                            directionsUseCaseUseCase(
-                                location.toLocationModel() to service.serviceLocation.toLocation()
-                            ).onSuccess {
-                                directions = it
-                            }
-                        }
-                        val distance = directions.routes.minOfOrNull { it.distance } ?: -1.0
-                        Log.i("MainViewModel", "Distance: $distance")
-                        if ((!_maxDistanceFilter.first()) or ((distance / 1000) <= (_maxDistance.first()))) {
-                            var locationString = ""
-                            reverseGeocodingUseCase(service.serviceLocation.toLocation()).onSuccess {
-                                locationString = it
-                            }
-                            val serviceModel = service.toNotificationServiceModel(
-                                directions = directions,
-                                locationString = locationString,
-                            )
-                            _services.value = _services.value + serviceModel
-                            val sb = StringBuilder()
-                            if (serviceModel.serviceLocationString.isNotEmpty())
-                                sb.append("Location: ${serviceModel.serviceLocationString}.\n")
-                            if (distance >= 0)
-                                sb.append("Distance: ${(distance / 1000).roundToInt()} km.\n")
-                            sb.append("Category: ${context.getString(serviceModel.category.text)}.\n")
-                            if (_homeUiState.value.providerState == ProviderState.IDLE)
-                                notificationService.showNotification(
-                                    _services.value.size,
-                                    "New service request from ${serviceModel.client.fullName}.\n",
-                                    sb.toString(),
-                                    NotificationCompat.Action(
-                                        R.drawable.baseline_check_24,
-                                        context.getString(R.string.accept),
-                                        notificationService.getPendingIntent(
-                                            Intent(
-                                                context,
-                                                NotificationsReceiver::class.java
-                                            )
-                                        )
+                queuesManager.notifications.consumeEach { notification ->
+                    when(notification) {
+                        is PolymorphicNotification.Service -> {
+                            serviceManager.processNewService(
+                                notification,
+                                _homeUiState.value.location?.toLocationModel(),
+                                _maxDistanceFilter.first(),
+                                _maxDistance.first()
+                            )?.let { service ->
+                                _homeUiState.update {
+                                    it.copy(
+                                        providerState = ProviderState.IDLE,
+                                        directions = null,
+                                        selectedService = null,
+                                        price = 0,
+                                        rating = 0.0
                                     )
+                                }
+                                _currentService.value = service
+                                _services.value = _services.value + service
+                                notificationManager.showServiceNotification(
+                                    service,
+                                    _services.value.size
                                 )
-                        }
-                    }
-                }
-            }
-            launch(Dispatchers.IO) {
-                queuesManager.serviceDone.consumeEach {
-                    if (_homeUiState.value.providerState == ProviderState.WORKING) {
-                        _services.value = _services.value.filter { it.id != it.id }
-                        _homeUiState.update {
-                            it.copy(
-                                providerState = ProviderState.IDLE,
-                                directions = null,
-                                selectedService = null,
-                                finishDialogVisible = true,
-                                price = it.price,
-                                rating = it.rating,
-                            )
-                        }
-                    }
-                }
-            }
-            launch(Dispatchers.IO) {
-                queuesManager.serviceRemove.consumeEach { serviceRemove ->
-                    Log.i("MainViewModel", "Service removed: ${serviceRemove.serviceId}")
-                    Log.i("MainViewModel", "Services: ${_services.value}")
-                    if (serviceRemove.exception?.let { it == (_provider.value?.id ?: "") } ?: true) {
-                        if (_services.value.indexOfFirst { it.id == serviceRemove.serviceId } == _homeUiState.value.selectedService)
-                            _homeUiState.update {
-                                it.copy(
-                                    providerState = ProviderState.IDLE,
-                                    directions = null,
-                                    selectedService = null,
-                                    price = 0,
-                                    rating = 0.0
-                                )
+                                Log.i("MainViewModel", "New service: $service")
                             }
-                        _services.value = _services.value.filter {
-                            it.id != serviceRemove.serviceId
                         }
-                    }
-                }
-            }
-            _homeUiState.collectLatest {
-                if (it.providerState == ProviderState.NAVIGATING)
-                    _currentService.value?.let { service ->
-                        it.location?.let { location ->
-                            directionsUseCaseUseCase(
-                                location.toLocationModel() to service.serviceLocation
-                            ).onSuccess { directions ->
-                                directions.routes.minByOrNull { it.duration }?.let { route ->
+                        is ServiceDone -> {
+                            _currentService.value?.let { service ->
+                                if (_homeUiState.value.providerState == ProviderState.WORKING) {
+                                    _services.value = _services.value.filter { it.id != service.id }
                                     _homeUiState.update {
-                                        it.copy(directions = route)
+                                        it.copy(
+                                            providerState = ProviderState.COMPLETED,
+                                            directions = null,
+                                            selectedService = null,
+                                            price = it.price,
+                                            rating = it.rating,
+                                        )
                                     }
                                 }
                             }
                         }
+                        is ServiceRemove -> {
+                            _provider.value?.id?.let { id ->
+                                if (notification.exception?.let { it != id } != false) {
+                                    if (
+                                        _services.value.indexOfFirst { it.id == notification.serviceId }
+                                        == _homeUiState.value.selectedService
+                                    )
+                                        _homeUiState.update {
+                                            it.copy(
+                                                providerState = ProviderState.IDLE,
+                                                directions = null,
+                                                selectedService = null,
+                                                price = 0,
+                                                rating = 0.0
+                                            )
+                                        }
+                                    _services.value = _services.value.filter {
+                                        it.id != notification.serviceId
+                                    }
+                                }
+                            }
+                        }
+                        else -> return@consumeEach
                     }
+                }
+            }
+            launch(Dispatchers.IO) {
+                _homeUiState.collectLatest {
+                    if (it.providerState == ProviderState.NAVIGATING)
+                        _currentService.value?.let { service ->
+                            it.location?.let { location ->
+                                directionsUseCaseUseCase(
+                                    location.toLocationModel() to service.serviceLocation
+                                ).onSuccess { directions ->
+                                    directions.routes.minByOrNull { it.duration }?.let { route ->
+                                        _homeUiState.update {
+                                            it.copy(directions = route)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                }
             }
         }
     }
@@ -236,30 +219,13 @@ class MainViewModel(
             Action.HideFinishDialog -> {
                 _homeUiState.update {
                     it.copy(
-                        finishDialogVisible = false
+                        providerState = ProviderState.IDLE
                     )
                 }
             }
             is Action.SetLocation -> {
                 _homeUiState.update {
                     it.copy(location = action.location)
-                }
-                viewModelScope.launch {
-                    action.location?.let { location ->
-                        updateUseCase(
-                            UpdateModel(
-                                id = _client.value.id,
-                                location = location.toLocationModel()
-                            )
-                        ).onSuccess {
-                            _profileUiState.update { state ->
-                                state.copy(
-                                    user = it.toProviderUi(),
-                                    editUser = it.toProviderUi()
-                                )
-                            }
-                        }
-                    }
                 }
             }
             Action.ConfirmProfileEditing -> {
@@ -302,7 +268,6 @@ class MainViewModel(
                                         .onError {
                                             sendEvent(ShowMainActivityMessage(it.text))
                                         }
-
                                     _profileUiState.update {
                                         it.copy(
                                             enableEditing = false,
@@ -344,6 +309,9 @@ class MainViewModel(
             }
 
             is Action.AcceptService -> {
+                _homeUiState.update {
+                    it.copy(loading = true)
+                }
                 viewModelScope.launch(Dispatchers.IO) {
                     acceptServiceUseCase(
                         _services.value[action.index].id to _profileUiState.value.user.id
@@ -360,7 +328,7 @@ class MainViewModel(
                         )
                     }
                     _homeUiState.update {
-                        it.copy(providerState = ProviderState.NAVIGATING)
+                        it.copy(providerState = ProviderState.NAVIGATING, loading = false)
                     }
                 }
             }

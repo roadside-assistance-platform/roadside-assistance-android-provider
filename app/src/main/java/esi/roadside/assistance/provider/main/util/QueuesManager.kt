@@ -2,7 +2,6 @@ package esi.roadside.assistance.provider.main.util
 
 import com.rabbitmq.client.BuiltinExchangeType
 import com.rabbitmq.client.CancelCallback
-import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.DeliverCallback
 import esi.roadside.assistance.provider.BuildConfig
@@ -10,7 +9,6 @@ import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
-import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -18,13 +16,7 @@ import kotlinx.serialization.json.Json
 
 class QueuesManager() {
     private val _notifications = Channel<PolymorphicNotification>()
-    private val _userNotifications = Channel<PolymorphicNotification.UserNotification>()
-    private val _services = Channel<PolymorphicNotification.Service>()
-    val services = _services
-    private val _serviceDone = Channel<PolymorphicNotification.ServiceDone>()
-    val serviceDone = _serviceDone
-    private val _serviceRemove = Channel<PolymorphicNotification.ServiceRemove>()
-    val serviceRemove = _serviceRemove
+    val notifications = _notifications
     var channel: com.rabbitmq.client.Channel? = null
 
     private fun connect() : com.rabbitmq.client.Channel {
@@ -58,13 +50,6 @@ class QueuesManager() {
                     val deserialized = Json.decodeFromString<PolymorphicNotification>(message)
                     println("Deserialized message: $deserialized")
                     _notifications.trySend(deserialized)
-                    when(deserialized) {
-                        is PolymorphicNotification.Service -> _services.trySend(deserialized)
-                        is PolymorphicNotification.UserNotification -> _userNotifications.trySend(deserialized)
-                        is PolymorphicNotification.ServiceDone -> _serviceDone.trySend(deserialized)
-                        is PolymorphicNotification.ServiceRemove -> _serviceRemove.trySend(deserialized)
-                        else -> return@let
-                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

@@ -1,7 +1,7 @@
 package esi.roadside.assistance.provider.main.presentation.components
 
 import android.content.Intent
-import android.net.Uri
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
-import androidx.compose.material.icons.filled.Comment
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DriveEta
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Map
@@ -27,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -42,6 +41,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
 import esi.roadside.assistance.provider.main.domain.Categories
@@ -50,12 +50,12 @@ import esi.roadside.assistance.provider.main.domain.models.LocationModel
 import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
 import java.time.ZonedDateTime
 import kotlin.math.roundToInt
-import androidx.core.net.toUri
 
 @Composable
 fun ServiceListItem(
     service: NotificationServiceModel,
     selected: Boolean,
+    loading: Boolean,
     onAccept: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
@@ -177,16 +177,21 @@ fun ServiceListItem(
                             )
                         }
                     }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(onCancel, Modifier.weight(1f)) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                        Button(onAccept, Modifier.weight(1f)) {
-                            Text(stringResource(R.string.accept))
-                        }
+                    AnimatedContent(loading, Modifier.fillMaxWidth()) {
+                        if (it)
+                            LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp))
+                        else
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedButton(onCancel, Modifier.weight(1f)) {
+                                    Text(stringResource(R.string.cancel))
+                                }
+                                Button(onAccept, Modifier.weight(1f)) {
+                                    Text(stringResource(R.string.accept))
+                                }
+                            }
                     }
                 }
             }
@@ -228,7 +233,8 @@ private fun ServiceListItemPreview() {
                 onAccept = {},
                 onCancel = {},
                 modifier = Modifier,
-                onClick = { }
+                onClick = { },
+                loading = false
             )
             ServiceListItem(
                 service = model,
@@ -236,7 +242,8 @@ private fun ServiceListItemPreview() {
                 onAccept = {},
                 onCancel = {},
                 modifier = Modifier,
-                onClick = { }
+                onClick = { },
+                loading = false
             )
         }
     }

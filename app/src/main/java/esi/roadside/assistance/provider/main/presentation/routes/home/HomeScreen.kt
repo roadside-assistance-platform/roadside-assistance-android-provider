@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.mapbox.geojson.LineString
@@ -116,7 +117,7 @@ fun HomeScreen(
         }
     }
     val marker = rememberIconImage(R.drawable.baseline_location_pin_24)
-    val bottomSheetState = rememberStandardBottomSheetState(confirmValueChange = {
+    val bottomSheetState = rememberStandardBottomSheetState(SheetValue.Expanded, confirmValueChange = {
         it != SheetValue.Hidden
     })
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
@@ -126,9 +127,8 @@ fun HomeScreen(
                 Text(
                     stringResource(R.string.nearby_clients),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .fillMaxWidth()
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(24.dp).fillMaxWidth()
                 )
             }
             AnimatedContent(uiState.providerState) {
@@ -136,6 +136,7 @@ fun HomeScreen(
                     ProviderState.IDLE -> IdleScreen(
                         uiState.services,
                         uiState.selectedService,
+                        uiState.loading,
                         onAction,
                         state,
                         bottomSheetState,
@@ -157,12 +158,9 @@ fun HomeScreen(
                         onAction(Action.Arrived)
                     }
                     ProviderState.WORKING -> WorkingScreen()
-                    ProviderState.COMPLETED -> {
-
-                    }
+                    ProviderState.COMPLETED -> return@AnimatedContent
                 }
             }
-
         },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 120.dp,

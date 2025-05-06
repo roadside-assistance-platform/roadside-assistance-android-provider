@@ -1,6 +1,5 @@
 package esi.roadside.assistance.provider.main.presentation.sheet
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,10 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
@@ -33,24 +31,22 @@ import kotlinx.coroutines.launch
 fun IdleScreen(
     services: List<NotificationServiceModel>,
     selectedService: Int?,
+    loading: Boolean,
     onAction: (Action) -> Unit,
     mapState: MapViewportState,
     bottomSheetState: SheetState,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     AnimatedContent(services.isEmpty(), modifier) {
         if (it)
-            Box(Modifier.height(100.dp)) {
-                Text(
-                    stringResource(R.string.no_nearby_clients),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                )
-            }
+            Text(
+                stringResource(R.string.no_nearby_clients),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(16.dp).padding(bottom = 24.dp).fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         else {
             LazyColumn(
                 Modifier.fillMaxWidth(),
@@ -77,7 +73,8 @@ fun IdleScreen(
                                 onAccept = {
                                     onAction(Action.AcceptService(index))
                                 },
-                                modifier = Modifier.animateItem()
+                                modifier = Modifier.animateItem(),
+                                loading = loading
                             ) {
                                 onAction(Action.SelectService(index))
                             }

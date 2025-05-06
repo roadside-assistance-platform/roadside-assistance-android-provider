@@ -4,32 +4,37 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
-import esi.roadside.assistance.provider.core.util.NotificationsReceiver
+import androidx.core.app.TaskStackBuilder
 
 class NotificationService(private val context: Context) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    fun getPendingIntent(intent: Intent) =
+    fun getPendingIntent(intent: Intent): PendingIntent =
         PendingIntent.getBroadcast(
             context,
             0,
             intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
     fun showNotification(
         id: Int,
         title: String,
         content: String,
+        extras: Map<String, String> = emptyMap(),
         vararg actions: NotificationCompat.Action
     ) {
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName).apply {
+            extras.forEach {
+                this?.putExtra(it.key, it.value)
+            }
+            this?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
         val pendingIntent = intent?.let {
-            androidx.core.app.TaskStackBuilder.create(context)
+            TaskStackBuilder.create(context)
                 .addNextIntentWithParentStack(it)
-                .getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE)
+                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
         val notification = NotificationCompat.Builder(
             context,
