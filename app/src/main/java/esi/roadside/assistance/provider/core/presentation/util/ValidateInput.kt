@@ -106,4 +106,8 @@ object ValidateInput {
         validateFullName(fullName) ?: validatePhoneNumber(phoneNumber) ?:
         validateEmail(email) ?: validatePassword(password) ?:
         validateConfirmPassword(password, confirmPassword)
+
+
+    fun validateResetPassword(password: String, confirmPassword: String): InputError? =
+        validatePassword(password) ?: validateConfirmPassword(password, confirmPassword)
 }

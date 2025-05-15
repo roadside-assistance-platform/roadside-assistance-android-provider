@@ -16,6 +16,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -25,7 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.auth.presentation.Action
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
@@ -33,13 +34,13 @@ import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SignupSecondScreen(
-    uiState: SignupUiState,
-    onAction: (Action) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SignupSecondScreen(modifier: Modifier = Modifier) {
+    val viewModel: SignupViewModel = koinViewModel()
+    val uiState by viewModel.state.collectAsState()
+
     BackgroundBox(R.drawable.signup_background, modifier) {
         Column(
             Modifier
@@ -80,7 +81,7 @@ fun SignupSecondScreen(
                 MyTextField(
                     uiState.email,
                     {
-                        onAction(Action.SetSignupEmail(it))
+                        viewModel.onAction(SignupAction.SetEmail(it))
                     },
                     label = stringResource(R.string.email),
                     placeholder = stringResource(R.string.email_placeholder),
@@ -92,11 +93,11 @@ fun SignupSecondScreen(
                 PasswordTextField(
                     uiState.password,
                     {
-                        onAction(Action.SetSignupPassword(it))
+                        viewModel.onAction(SignupAction.SetPassword(it))
                     },
                     uiState.passwordHidden,
                     {
-                        onAction(Action.ToggleSignupPasswordHidden)
+                        viewModel.onAction(SignupAction.TogglePasswordHidden)
                     },
                     error = uiState.passwordError,
                     enabled = !uiState.loading,
@@ -106,11 +107,11 @@ fun SignupSecondScreen(
                 PasswordTextField(
                     uiState.confirmPassword,
                     {
-                        onAction(Action.SetSignupConfirmPassword(it))
+                        viewModel.onAction(SignupAction.SetConfirmPassword(it))
                     },
                     uiState.confirmPasswordHidden,
                     {
-                        onAction(Action.ToggleSignupConfirmPasswordHidden)
+                        viewModel.onAction(SignupAction.ToggleConfirmPasswordHidden)
                     },
                     error = uiState.confirmPasswordError,
                     label = stringResource(R.string.confirm_password),
@@ -131,7 +132,7 @@ fun SignupSecondScreen(
                             Modifier.fillMaxWidth(),
                             enabled = !uiState.loading
                         ) {
-                            onAction(Action.Signup)
+                            viewModel.onAction(SignupAction.Signup)
                         }
                 }
             }
@@ -148,6 +149,6 @@ fun SignupSecondScreen(
 @Composable
 private fun SignupScreenPreview() {
     PreviewAppTheme {
-        SignupScreen(SignupUiState(), {})
+        //SignupScreen(SignupUiState(), {})
     }
 }

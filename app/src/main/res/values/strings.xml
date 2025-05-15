@@ -347,4 +347,6 @@
     <string name="notification_permission_text">To receive notifications, we need to allow this permission</string>
     <string name="completed">Good job !</string>
     <string name="service_completed">Service completed</string>
+    <string name="reset">Reset</string>
+    <string name="password_reset_success">Password reset successfully</string>
 </resources>

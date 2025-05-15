@@ -21,6 +21,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -32,7 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.auth.presentation.Action
+import esi.roadside.assistance.provider.auth.presentation.NavRoutes
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
@@ -41,14 +43,14 @@ import esi.roadside.assistance.provider.core.presentation.components.ProfilePict
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
 import esi.roadside.assistance.provider.main.domain.Categories
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupScreen(
-    uiState: SignupUiState,
-    onAction: (Action) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit) {
+    val viewModel: SignupViewModel = koinViewModel()
+    val uiState by viewModel.state.collectAsState()
+
     BackgroundBox(R.drawable.signup_background, modifier) {
         Column(
             Modifier
@@ -81,7 +83,7 @@ fun SignupScreen(
                 )
                 Spacer(Modifier.height(18.dp))
                 ProfilePicturePicker(uiState.image, enabled = !uiState.loading) {
-                    onAction(Action.SetSignupImage(it))
+                    viewModel.onAction(SignupAction.SetImage(it))
                 }
             }
             Column(
@@ -92,7 +94,7 @@ fun SignupScreen(
                 MyTextField(
                     uiState.fullName,
                     {
-                        onAction(Action.SetSignupFullName(it))
+                        viewModel.onAction(SignupAction.SetFullName(it))
                     },
                     label = stringResource(R.string.full_name),
                     placeholder = stringResource(R.string.full_name_placeholder),
@@ -103,7 +105,7 @@ fun SignupScreen(
                 MyTextField(
                     uiState.phoneNumber,
                     {
-                        onAction(Action.SetSignupPhoneNumber(it))
+                        viewModel.onAction(SignupAction.SetPhoneNumber(it))
                     },
                     label = stringResource(R.string.phone_number),
                     placeholder = stringResource(R.string.phone_number_placeholder),
@@ -125,9 +127,11 @@ fun SignupScreen(
                                     .clip(MaterialTheme.shapes.small)
                                     .padding(end = 2.dp)
                                     .clickable {
-                                    onAction(if (uiState.categories.contains(category))
-                                        Action.RemoveCategory(category)
-                                    else Action.AddCategory(category))
+                                    viewModel.onAction(
+                                        if (uiState.categories.contains(category))
+                                            SignupAction.RemoveCategory(category)
+                                        else SignupAction.AddCategory(category)
+                                    )
                                 },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
@@ -135,9 +139,9 @@ fun SignupScreen(
                                 Checkbox(
                                     checked = uiState.categories.contains(category),
                                     onCheckedChange = {
-                                        onAction(
-                                            if (it) Action.AddCategory(category)
-                                            else Action.RemoveCategory(category)
+                                        viewModel.onAction(
+                                            if (it) SignupAction.AddCategory(category)
+                                            else SignupAction.RemoveCategory(category)
                                         )
                                     }
                                 )
@@ -158,12 +162,12 @@ fun SignupScreen(
                         .padding(top = 16.dp),
                     enabled = !uiState.loading
                 ) {
-                    onAction(Action.GoToSignup2)
+                    onNavigate(NavRoutes.Signup2)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.already_have_an_account))
                     TextButton(
-                        { onAction(Action.GoToLogin) },
+                        { onNavigate(NavRoutes.Login) },
                         contentPadding = PaddingValues(horizontal = 8.dp),
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.tertiary
@@ -187,6 +191,6 @@ fun SignupScreen(
 @Composable
 private fun SignupScreenPreview() {
     PreviewAppTheme {
-        SignupScreen(SignupUiState(), {})
+        //SignupScreen(SignupUiState(), {})
     }
 }

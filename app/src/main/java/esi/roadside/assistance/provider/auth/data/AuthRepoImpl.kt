@@ -50,7 +50,7 @@ class AuthRepoImpl(
         }
     }
 
-    override suspend fun resetPassword(email: String): Result<ProviderModel, DomainError> {
+    override suspend fun resetPassword(email: String, password: String): Result<ProviderModel, DomainError> {
         TODO("Not yet implemented")
     }
 

@@ -326,6 +326,13 @@ class MainViewModel(
                             "client",
                             ServiceAcceptance(service.id, service.category, provider.toProviderInfo())
                         )
+                        _homeUiState.value.location?.let { location ->
+                            queuesManager.publishUserNotification(
+                                service.client.id,
+                                "client",
+                                LocationUpdate(location.longitude(), location.latitude())
+                            )
+                        }
                     }
                     _homeUiState.update {
                         it.copy(providerState = ProviderState.NAVIGATING, loading = false)
