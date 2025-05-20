@@ -349,4 +349,5 @@
     <string name="service_completed">Service completed</string>
     <string name="reset">Reset</string>
     <string name="password_reset_success">Password reset successfully</string>
+    <string name="user_deleted">User deleted by admin</string>
 </resources>

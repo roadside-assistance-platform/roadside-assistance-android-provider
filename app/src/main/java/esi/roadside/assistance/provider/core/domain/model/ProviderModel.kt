@@ -17,6 +17,7 @@ data class ProviderModel(
     val photo: String,
     val categories: Set<Categories>,
     val services: List<ServiceModel> = emptyList(),
+    val isApproved: Boolean,
     val createdAt: ZonedDateTime,
     val updatedAt: ZonedDateTime
 ) {
@@ -29,6 +30,7 @@ data class ProviderModel(
         photo = photo,
         serviceCategories = categories,
         services = services.map { it.toService() },
+        isApproved = isApproved,
         createdAt = createdAt.toOffsetDateTime().toString(),
         updatedAt = updatedAt.toOffsetDateTime().toString()
     )

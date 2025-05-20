@@ -18,6 +18,7 @@ data class Provider(
     val photo: String? = "",
     val serviceCategories: Set<Categories> = emptySet(),
     val services: List<Service> = emptyList(),
+    val isApproved: Boolean = false,
     val createdAt: String = "",
     val updatedAt: String = "",
 ) {
@@ -35,6 +36,7 @@ data class Provider(
             OffsetDateTime.now()
         }.toLocalDateTime().atZone(ZoneId.systemDefault()),
         categories = serviceCategories,
+        isApproved = isApproved,
         updatedAt = try {
             OffsetDateTime.parse(updatedAt)
         } catch(_: Exception) {

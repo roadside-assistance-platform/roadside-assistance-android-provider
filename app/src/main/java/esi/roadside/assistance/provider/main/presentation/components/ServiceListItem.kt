@@ -47,13 +47,13 @@ import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
 import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
-import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceInfo
 import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 
 @Composable
 fun ServiceListItem(
-    service: NotificationServiceModel,
+    service: ServiceInfo,
     selected: Boolean,
     loading: Boolean,
     onAccept: () -> Unit,
@@ -203,7 +203,7 @@ fun ServiceListItem(
 @Composable
 private fun ServiceListItemPreview() {
     AppTheme {
-        val model = NotificationServiceModel(
+        val model = ServiceInfo(
             id = "id1030",
             client = ClientInfo(
                 id = "id209",

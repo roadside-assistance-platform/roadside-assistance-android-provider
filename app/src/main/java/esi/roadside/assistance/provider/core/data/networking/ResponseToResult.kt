@@ -31,6 +31,7 @@ suspend inline fun <reified T> responseToResult(
         CallType.HOME -> DomainError.UNKNOWN
         else -> DomainError.UNKNOWN
     }
+    val error403 = DomainError.USER_DELETED
     return when (response.status.value) {
         in 200..299 -> {
             try {
@@ -41,6 +42,7 @@ suspend inline fun <reified T> responseToResult(
         }
         400 -> Error(error400)
         401 -> Error(error401)
+        403 -> Error(error403)
         500 -> Error(DomainError.SERVER_ERROR)
         502 -> Error(DomainError.SERVER_UNAVAILABLE)
         else -> Error(DomainError.UNKNOWN)

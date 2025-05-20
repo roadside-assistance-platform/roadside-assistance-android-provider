@@ -12,15 +12,14 @@ import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.ClientInfoModel
 import esi.roadside.assistance.provider.main.domain.models.ServiceModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceResponse
 import esi.roadside.assistance.provider.main.domain.repository.GeocodingRepo
 import esi.roadside.assistance.provider.main.domain.repository.MainRepo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
-import io.ktor.http.parameters
 
 class MainRepoImpl(
     private val geocodingRepo: GeocodingRepo,
@@ -35,7 +34,7 @@ class MainRepoImpl(
         }
 
     override suspend fun acceptService(request: Pair<String, String>): Result<ServiceModel, DomainError> =
-        safeCall<Service> {
+        safeCall<ServiceResponse> {
             client.put(constructUrl("${Endpoints.SERVICE_UPDATE}${request.first}")) {
                 val json = """
                     {
@@ -45,7 +44,7 @@ class MainRepoImpl(
                 setBody(json)
             }.body()
         }.map {
-            var service = it.toServiceModel("")
+            var service = it.data.service.toServiceModel("")
             geocodingRepo.getLocationString(service.serviceLocation).onSuccess { locationString ->
                 service = service.copy(serviceLocationString = locationString)
             }

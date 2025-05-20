@@ -4,7 +4,7 @@ import esi.roadside.assistance.provider.core.data.dto.Comment
 import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.LocationModel
-import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceInfo
 import esi.roadside.assistance.provider.main.domain.models.ProviderInfo
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
@@ -39,8 +39,8 @@ sealed interface PolymorphicNotification {
         val updatedAt: Long = 0,
         val comments: List<Comment> = emptyList(),
     ) : PolymorphicNotification {
-        fun toNotificationServiceModel(directions: JsonDirectionsResponse, locationString: String): NotificationServiceModel {
-            return NotificationServiceModel(
+        fun toServiceInfo(directions: JsonDirectionsResponse, locationString: String): ServiceInfo {
+            return ServiceInfo(
                 id = id,
                 client = client,
                 providerId = provider?.id,
@@ -73,6 +73,7 @@ sealed interface PolymorphicNotification {
     data class LocationUpdate(
         val longitude: Double,
         val latitude: Double,
+        val eta: Double?
     ) : PolymorphicNotification
 
     @Serializable
@@ -84,6 +85,9 @@ sealed interface PolymorphicNotification {
 
     @Serializable
     data object ProviderArrived : PolymorphicNotification
+
+    @Serializable
+    data class Message(val content: String) : PolymorphicNotification
 
     @Serializable
     data class ServiceDone(
@@ -112,6 +116,8 @@ sealed interface PolymorphicNotification {
                 polymorphic(PolymorphicNotification::class, UserNotification::class, UserNotification.serializer())
                 polymorphic(PolymorphicNotification::class, LocationUpdate::class, LocationUpdate.serializer())
                 polymorphic(PolymorphicNotification::class, ServiceAcceptance::class, ServiceAcceptance.serializer())
+                polymorphic(PolymorphicNotification::class, Message::class, Message.serializer())
+                polymorphic(PolymorphicNotification::class, Message::class, Message.serializer())
                 polymorphic(PolymorphicNotification::class, ServiceDone::class, ServiceDone.serializer())
                 polymorphic(PolymorphicNotification::class, ProviderArrived::class, ProviderArrived.serializer())
                 polymorphic(PolymorphicNotification::class, ServiceRemove::class, ServiceRemove.serializer())
@@ -136,6 +142,7 @@ sealed interface PolymorphicNotification {
                 "UserNotification" -> json.decodeFromJsonElement(UserNotification.serializer(), jsonElement)
                 "LocationUpdate" -> json.decodeFromJsonElement(LocationUpdate.serializer(), jsonElement)
                 "ServiceAcceptance" -> json.decodeFromJsonElement(ServiceAcceptance.serializer(), jsonElement)
+                "Message" -> json.decodeFromJsonElement(Message.serializer(), jsonElement)
                 "ServiceDone" -> json.decodeFromJsonElement(ServiceDone.serializer(), jsonElement)
                 "ProviderArrived" -> json.decodeFromJsonElement(ProviderArrived.serializer(), jsonElement)
                 "ServiceRemove" -> json.decodeFromJsonElement(ServiceRemove.serializer(), jsonElement)

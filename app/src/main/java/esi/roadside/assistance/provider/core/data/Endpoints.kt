@@ -15,7 +15,6 @@ object Endpoints {
     const val VERIFY_EMAIL = "/email/verify-code"
     const val GET_CLIENT_INFO = "/client/info/"
     const val SERVICE_UPDATE = "/service/update/"
-    const val SERVICE_DELETE = "/service/delete/"
     const val GET_LOCATION_STRING = "/reverse/geocoding?access_token={access_token}&longitude={longitude}&latitude={latitude}&types=address"
     const val GET_ROUTES = "/{profile}/{coordinates}?access_token={access_token}&geometries=geojson"
 

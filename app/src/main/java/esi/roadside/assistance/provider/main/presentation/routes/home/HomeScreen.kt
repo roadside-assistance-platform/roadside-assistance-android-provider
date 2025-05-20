@@ -63,7 +63,7 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.data.FollowPuckViewportStateOptions
 import com.mapbox.maps.plugin.viewport.data.OverviewViewportStateOptions
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
+import esi.roadside.assistance.provider.main.domain.repository.ServiceState
 import esi.roadside.assistance.provider.main.presentation.Action
 import esi.roadside.assistance.provider.main.presentation.sheet.IdleScreen
 import esi.roadside.assistance.provider.main.presentation.sheet.NavigatingScreen
@@ -76,7 +76,7 @@ import kotlin.math.roundToInt
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    currentService: NotificationServiceModel?,
+    currentService: ServiceState,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -123,7 +123,7 @@ fun HomeScreen(
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     BottomSheetScaffold(
         sheetContent = {
-            AnimatedVisibility(uiState.selectedService == null) {
+            AnimatedVisibility(currentService.selected == null) {
                 Text(
                     stringResource(R.string.nearby_clients),
                     style = MaterialTheme.typography.titleLarge,
@@ -131,11 +131,11 @@ fun HomeScreen(
                     modifier = Modifier.padding(24.dp).fillMaxWidth()
                 )
             }
-            AnimatedContent(uiState.providerState) {
+            AnimatedContent(currentService.providerState) {
                 when(it) {
                     ProviderState.IDLE -> IdleScreen(
-                        uiState.services,
-                        uiState.selectedService,
+                        currentService.services,
+                        currentService.selected,
                         uiState.loading,
                         onAction,
                         state,
@@ -146,10 +146,10 @@ fun HomeScreen(
                             (uiState.directions.duration / 60).roundToInt()
                         },
                         {
-                            currentService?.let {
+                            currentService.serviceModel?.serviceLocation?.let {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    "https://www.google.com/maps/dir/?api=1&destination=${it.serviceLocation.latitude},${it.serviceLocation.longitude}".toUri()
+                                    "https://www.google.com/maps/dir/?api=1&destination=${it.latitude},${it.longitude}".toUri()
                                 )
                                 context.startActivity(intent)
                             }
@@ -196,7 +196,7 @@ fun HomeScreen(
                         MapboxStandardStyle()
                 }
             ) {
-                uiState.services.forEach {
+                currentService.services.forEach {
                     PointAnnotation(
                         point = it.serviceLocation
                             .let { Point.fromLngLat(it.longitude, it.latitude) }

@@ -16,6 +16,7 @@ enum class DomainError(val text: Int, val description: Int? = null, val icon: Im
     USER_ALREADY_EXISTS(R.string.user_exists_error),
     INCORRECT_CREDENTIALS(R.string.incorrect_credentials_error),
     USER_NOT_FOUND(R.string.user_not_found_error),
+    USER_DELETED(R.string.user_deleted),
     SERIALIZATION_ERROR(R.string.serialization_error),
     UNKNOWN(R.string.unknown_error),
     NO_INTERNET(R.string.no_internet_error, R.string.no_internet_error_descr, Icons.Default.WifiOff),

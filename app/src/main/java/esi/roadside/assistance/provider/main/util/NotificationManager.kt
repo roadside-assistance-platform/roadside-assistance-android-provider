@@ -6,13 +6,13 @@ import androidx.core.app.NotificationCompat
 import esi.roadside.assistance.provider.NotificationService
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.util.NotificationsReceiver
-import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceInfo
 
 class NotificationManager(
     private val notificationService: NotificationService,
     private val context: Context,
 ) {
-    fun showServiceNotification(serviceModel: NotificationServiceModel, serviceCount: Int) {
+    fun showServiceNotification(serviceModel: ServiceInfo, serviceCount: Int) {
         val sb = StringBuilder()
         if (serviceModel.serviceLocationString.isNotEmpty())
             sb.append("Location: ${serviceModel.serviceLocationString}.\n")

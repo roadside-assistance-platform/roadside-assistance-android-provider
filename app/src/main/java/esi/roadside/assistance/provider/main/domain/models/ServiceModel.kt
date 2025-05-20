@@ -1,7 +1,6 @@
 package esi.roadside.assistance.provider.main.domain.models
 
 import esi.roadside.assistance.provider.core.data.dto.Service
-import esi.roadside.assistance.provider.main.data.dto.DirectionsResponse
 import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
 import esi.roadside.assistance.provider.main.domain.Categories
 import java.time.ZonedDateTime
@@ -11,7 +10,7 @@ data class ServiceModel(
     val clientId: String,
     val providerId: String?,
     val price: Int,
-    val description: String,
+    val description: String?,
     val serviceRating: Float,
     val serviceLocation: LocationModel,
     val serviceLocationString: String = "",
@@ -30,14 +29,14 @@ data class ServiceModel(
         serviceLocation = serviceLocation.toString(),
         done = done,
         serviceCategory = category,
-        createdAt = createdAt.toInstant().toEpochMilli(),
-        updatedAt = updatedAt.toInstant().toEpochMilli(),
+        createdAt = createdAt.toString(),
+        updatedAt = updatedAt.toString(),
         comments = comments.map { it.toComment() },
         description = description
     )
 }
 
-data class NotificationServiceModel(
+data class ServiceInfo(
     val id: String,
     val client: ClientInfo,
     val providerId: String?,

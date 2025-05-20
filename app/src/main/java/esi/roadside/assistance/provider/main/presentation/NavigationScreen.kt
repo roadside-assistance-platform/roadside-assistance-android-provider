@@ -78,10 +78,9 @@ fun NavigationScreen(
                 }
         } != false
     val homeUiState by mainViewModel.homeUiState.collectAsState(HomeUiState())
-    val currentService by mainViewModel.currentService.collectAsState(null)
     val userNotification by mainViewModel.userNotification.collectAsState()
-    val profileUiState by mainViewModel.profileUiState.collectAsState()
-    val navigationBarVisible = isParent and ((currentNavRoute != Routes.PROFILE) or !profileUiState.enableEditing)
+    val navigationBarVisible = isParent and (currentNavRoute != Routes.PROFILE)
+    val currentService by mainViewModel.serviceState.collectAsState()
 
     Scaffold(
         modifier = modifier,
@@ -139,7 +138,7 @@ fun NavigationScreen(
                 }
             }
             composable<NavRoutes.Profile> {
-                ProfileScreen(profileUiState, onAction)
+                ProfileScreen()
             }
             navigation<NavRoutes.Settings>(NavRoutes.SettingsList) {
                 composable<NavRoutes.SettingsList> {
@@ -177,7 +176,7 @@ fun NavigationScreen(
     }
     Dialog(
         title = stringResource(R.string.service_completed),
-        visible = homeUiState.providerState == ProviderState.COMPLETED,
+        visible = currentService.providerState == ProviderState.COMPLETED,
         onDismissRequest = {
             mainViewModel.onAction(Action.HideFinishDialog)
         },
@@ -198,12 +197,12 @@ fun NavigationScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                stringResource(R.string.dzd, homeUiState.price),
+                stringResource(R.string.dzd, currentService.price),
                 Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
             )
-            homeUiState.rating?.let {
+            currentService.rating?.let {
                 RatingBar(
                     it,
                     {},

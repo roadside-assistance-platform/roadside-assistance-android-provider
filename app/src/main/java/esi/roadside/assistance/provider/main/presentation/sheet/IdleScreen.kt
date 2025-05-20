@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.main.domain.models.NotificationServiceModel
+import esi.roadside.assistance.provider.main.domain.models.ServiceInfo
 import esi.roadside.assistance.provider.main.presentation.Action
 import esi.roadside.assistance.provider.main.presentation.components.ServiceListItem
 import esi.roadside.assistance.provider.main.presentation.routes.home.followLocation
@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IdleScreen(
-    services: List<NotificationServiceModel>,
+    services: List<ServiceInfo>,
     selectedService: Int?,
     loading: Boolean,
     onAction: (Action) -> Unit,
