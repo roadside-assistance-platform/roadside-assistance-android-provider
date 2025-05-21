@@ -350,4 +350,13 @@
     <string name="reset">Reset</string>
     <string name="password_reset_success">Password reset successfully</string>
     <string name="user_deleted">User deleted by admin</string>
+    <string name="idle">Idle</string>
+    <string name="navigating_text">Navigating to</string>
+    <string name="not_approved">You\'re not approved yet by the admin</string>
+    <string name="refresh">Refresh</string>
+    <string name="chat_placeholder">Send message to provider</string>
+    <string name="error_wrong_password">Wrong password</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm new password</string>
 </resources>

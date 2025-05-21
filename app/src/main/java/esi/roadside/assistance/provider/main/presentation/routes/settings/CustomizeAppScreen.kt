@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.data.SettingsDataStore
 import esi.roadside.assistance.provider.core.presentation.util.isDark
+import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
 import esi.roadside.assistance.provider.main.presentation.constants.Settings.themeOptions
 import esi.roadside.assistance.provider.main.util.plus
 import esi.roadside.assistance.provider.settings.presentation.checkSettingsItem
@@ -45,30 +46,19 @@ import org.koin.compose.koinInject
 fun CustomizeAppScreen(modifier: Modifier = Modifier) {
     val listState = rememberLazyListState()
     val dataStore = koinInject<SettingsDataStore>()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val isDark by isDark()
     val dynamicColorsChecked by dataStore.dynamicColors.collectAsState(initial = true)
     val extraDarkChecked by dataStore.extraDark.collectAsState(initial = true)
     val theme by dataStore.theme.collectAsState(initial = "light")
     val scope = rememberCoroutineScope()
-    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        stringResource(id = R.string.theme),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { dispatcher?.onBackPressed() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
+            TopAppBar(
+                title = stringResource(R.string.customize_app),
+                background = R.drawable.union,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { paddingValues ->

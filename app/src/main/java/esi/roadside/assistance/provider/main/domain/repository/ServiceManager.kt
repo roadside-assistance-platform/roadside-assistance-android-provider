@@ -61,6 +61,7 @@ class ServiceManager(
     }
 
     suspend fun consume(onLocationRequest: suspend () -> LocationModel?) {
+        Log.i("MainViewModel", "Consuming")
         queuesManager.notifications.consumeEach { notification ->
             Log.i("MainViewModel", "New message: $notification")
             when(notification) {
@@ -177,7 +178,8 @@ class ServiceManager(
                     _service.update {
                         it.copy(
                             serviceModel = selectedService,
-                            providerState = ProviderState.NAVIGATING
+                            providerState = ProviderState.NAVIGATING,
+                            clientInfo = selectedService.client
                         )
                     }
                     queuesManager.publishUserNotification(

@@ -1,7 +1,8 @@
-package esi.roadside.assistance.provider.settings.presentation
+package esi.roadside.assistance.provider.main.presentation.routes.settings
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,6 +35,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.data.SettingsDataStore
+import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
+import esi.roadside.assistance.provider.main.util.plus
+import esi.roadside.assistance.provider.settings.presentation.checkSettingsItem
+import esi.roadside.assistance.provider.settings.presentation.settingsItem
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
@@ -43,39 +48,28 @@ import kotlin.math.roundToInt
 fun MapsSettingsScreen(modifier: Modifier = Modifier) {
     val listState = rememberLazyListState()
     val dataStore = koinInject<SettingsDataStore>()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val maxDistanceFilter by dataStore.maxDistanceFilter.collectAsState(initial = true)
     val maxDistance by dataStore.maxDistance.collectAsState(initial = 100)
     var selectedDistance by remember { mutableFloatStateOf(maxDistance.toFloat()) }
     LaunchedEffect(maxDistance) {
         selectedDistance = maxDistance.toFloat()
     }
-    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val scope = rememberCoroutineScope()
     Scaffold(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        stringResource(id = R.string.maps_settings),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { dispatcher?.onBackPressed() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
+            TopAppBar(
+                title = stringResource(R.string.maps_settings),
+                background = R.drawable.union,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             state = listState,
-            contentPadding = paddingValues,
+            contentPadding = paddingValues + PaddingValues(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             checkSettingsItem(

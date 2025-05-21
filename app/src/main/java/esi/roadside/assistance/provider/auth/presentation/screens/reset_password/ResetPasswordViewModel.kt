@@ -57,7 +57,7 @@ class ResetPasswordViewModel(
                     it.copy(loading = true)
                 }
                 viewModelScope.launch {
-                    sendEmailUseCase(SendEmailModel(_state.value.email))
+                    sendEmailUseCase(SendEmailModel(_state.value.email), true)
                         .onSuccess {
                             _state.update {
                                 it.copy(userState = ResetPasswordUserState.EnterCode)

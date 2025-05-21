@@ -1,6 +1,5 @@
 package esi.roadside.assistance.provider.main.presentation
 
-import esi.roadside.assistance.provider.R
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -13,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +23,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.compose.rememberNavController
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.AuthActivity
 import esi.roadside.assistance.provider.core.presentation.components.IconDialog
 import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
@@ -67,7 +66,6 @@ class MainActivity : ComponentActivity() {
             SetSystemBarColors()
             val navController = rememberNavController()
             mainViewModel = koinViewModel()
-            val bottomSheetState = rememberModalBottomSheetState(true)
             val scope = rememberCoroutineScope()
             val snackbarHostState = remember { SnackbarHostState() }
             var isGranted by remember { mutableStateOf<Boolean?>(null) }
@@ -87,12 +85,6 @@ class MainActivity : ComponentActivity() {
                         scope.launch {
                             snackbarHostState.showSnackbar(message = getString(it.text))
                         }
-                    Event.ShowRequestAssistance -> scope.launch {
-                        bottomSheetState.show()
-                    }
-                    Event.HideRequestAssistance -> scope.launch {
-                        bottomSheetState.hide()
-                    }
                     Event.ExitToAuthActivity -> {
                         startActivity(Intent(this, AuthActivity::class.java))
                         finish()

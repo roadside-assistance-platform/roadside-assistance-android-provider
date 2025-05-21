@@ -16,8 +16,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -34,13 +32,13 @@ import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SignupSecondScreen(modifier: Modifier = Modifier) {
-    val viewModel: SignupViewModel = koinViewModel()
-    val uiState by viewModel.state.collectAsState()
-
+fun SignupSecondScreen(
+    uiState: SignupUiState,
+    onAction: (SignupAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
     BackgroundBox(R.drawable.signup_background, modifier) {
         Column(
             Modifier
@@ -81,7 +79,7 @@ fun SignupSecondScreen(modifier: Modifier = Modifier) {
                 MyTextField(
                     uiState.email,
                     {
-                        viewModel.onAction(SignupAction.SetEmail(it))
+                        onAction(SignupAction.SetEmail(it))
                     },
                     label = stringResource(R.string.email),
                     placeholder = stringResource(R.string.email_placeholder),
@@ -93,11 +91,11 @@ fun SignupSecondScreen(modifier: Modifier = Modifier) {
                 PasswordTextField(
                     uiState.password,
                     {
-                        viewModel.onAction(SignupAction.SetPassword(it))
+                        onAction(SignupAction.SetPassword(it))
                     },
                     uiState.passwordHidden,
                     {
-                        viewModel.onAction(SignupAction.TogglePasswordHidden)
+                        onAction(SignupAction.TogglePasswordHidden)
                     },
                     error = uiState.passwordError,
                     enabled = !uiState.loading,
@@ -107,11 +105,11 @@ fun SignupSecondScreen(modifier: Modifier = Modifier) {
                 PasswordTextField(
                     uiState.confirmPassword,
                     {
-                        viewModel.onAction(SignupAction.SetConfirmPassword(it))
+                        onAction(SignupAction.SetConfirmPassword(it))
                     },
                     uiState.confirmPasswordHidden,
                     {
-                        viewModel.onAction(SignupAction.ToggleConfirmPasswordHidden)
+                        onAction(SignupAction.ToggleConfirmPasswordHidden)
                     },
                     error = uiState.confirmPasswordError,
                     label = stringResource(R.string.confirm_password),
@@ -132,7 +130,7 @@ fun SignupSecondScreen(modifier: Modifier = Modifier) {
                             Modifier.fillMaxWidth(),
                             enabled = !uiState.loading
                         ) {
-                            viewModel.onAction(SignupAction.Signup)
+                            onAction(SignupAction.Signup)
                         }
                 }
             }

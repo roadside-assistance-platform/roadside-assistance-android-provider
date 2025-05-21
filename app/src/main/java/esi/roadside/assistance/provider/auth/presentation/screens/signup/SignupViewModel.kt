@@ -1,5 +1,6 @@
 package esi.roadside.assistance.provider.auth.presentation.screens.signup
 
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,6 +60,7 @@ class SignupViewModel(
     fun onAction(action: SignupAction) {
         when(action) {
             is Signup -> {
+                Log.d("SignupViewModel", "Signup")
                 ValidateInput.validateSignup(
                     _state.value.email,
                     _state.value.password,
@@ -66,6 +68,7 @@ class SignupViewModel(
                     _state.value.fullName,
                     _state.value.phoneNumber
                 )?.let { error ->
+                    Log.d("SignupViewModel", "Signup error: $error")
                     _state.update {
                         it.copy(
                             emailError = error.takeIf { error.field == Field.EMAIL },
@@ -216,11 +219,23 @@ class SignupViewModel(
                 }
             }
             GoToSignup2 -> {
+                ValidateInput.validateSignup1(
+                    _state.value.fullName,
+                    _state.value.phoneNumber
+                )?.let { error ->
+                    _state.update {
+                        it.copy(
+                            fullNameError = error.takeIf { error.field == Field.FULL_NAME },
+                            phoneNumberError = error.takeIf { error.field == Field.PHONE_NUMBER },
+                        )
+                    }
+                    return
+                }
                 if (_state.value.categories.isEmpty()) {
                     sendEvent(ShowAuthActivityMessage(R.string.select_at_least_category))
-                } else {
-                    sendEvent(AuthNavigate(NavRoutes.Signup2))
+                    return
                 }
+                sendEvent(AuthNavigate(NavRoutes.Signup2))
             }
             is AddCategory -> {
                 _state.update {

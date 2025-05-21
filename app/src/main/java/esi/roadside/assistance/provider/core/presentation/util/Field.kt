@@ -5,5 +5,6 @@ enum class Field {
     PASSWORD,
     CONFIRM_PASSWORD,
     PHONE_NUMBER,
-    FULL_NAME
+    FULL_NAME,
+    CURRENT_PASSWORD,
 }

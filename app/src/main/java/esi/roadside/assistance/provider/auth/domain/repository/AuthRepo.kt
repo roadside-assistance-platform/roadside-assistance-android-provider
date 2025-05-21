@@ -13,9 +13,9 @@ import esi.roadside.assistance.provider.core.domain.util.Result
 interface AuthRepo {
     suspend fun login(request: LoginRequestModel): Result<AuthResponseModel, DomainError>
     suspend fun signup(request: SignupModel): Result<AuthResponseModel, DomainError>
-    suspend fun resetPassword(email: String, password: String): Result<ProviderModel, DomainError>
+    suspend fun resetPassword(email: String, password: String): Result<Any, DomainError>
     suspend fun update(request: UpdateModel): Result<ProviderModel, DomainError>
-    suspend fun sendEmail(request: SendEmailModel): Result<Boolean, DomainError>
+    suspend fun sendEmail(request: SendEmailModel, forgot: Boolean = false): Result<Boolean, DomainError>
     suspend fun verifyEmail(request: VerifyEmailModel): Result<Boolean, DomainError>
     suspend fun authHome(): Result<Boolean, DomainError>
 }

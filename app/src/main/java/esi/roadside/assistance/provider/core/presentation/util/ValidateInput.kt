@@ -1,7 +1,9 @@
 package esi.roadside.assistance.provider.core.presentation.util
 
+import android.util.Log
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.screens.login.InputError
+import esi.roadside.assistance.provider.main.presentation.routes.settings.ChangePasswordAction
 
 object ValidateInput {
     fun validateEmail(email: String): InputError? =
@@ -96,6 +98,11 @@ object ValidateInput {
         validateFullName(fullName) ?: validateEmail(email) ?:
         validatePhoneNumber(phoneNumber)
 
+    fun validateSignup1(
+        fullName: String,
+        phoneNumber: String
+    ): InputError? = validateFullName(fullName) ?: validatePhoneNumber(phoneNumber)
+
     fun validateSignup(
         email: String,
         password: String,
@@ -110,4 +117,12 @@ object ValidateInput {
 
     fun validateResetPassword(password: String, confirmPassword: String): InputError? =
         validatePassword(password) ?: validateConfirmPassword(password, confirmPassword)
+
+    fun validateChangePassword(
+//        currentPassword: String,
+        newPassword: String,
+        confirmNewPassword: String,
+    ): InputError? {
+        return validatePassword(newPassword) ?: validateConfirmPassword(newPassword, confirmNewPassword)
+    }
 }

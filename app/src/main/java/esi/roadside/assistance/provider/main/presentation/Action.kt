@@ -11,8 +11,11 @@ sealed interface Action {
         data class SelectService(val index: Int): Action
         data object UnSelectService: Action
         data class AcceptService(val index: Int): Action
+        data class SetMessage(val message: String): Action
+        data object SendMessage: Action
         data object LocationUpdate: Action
         data object HideFinishDialog: Action
         data object Arrived: Action
+        data object RefreshUser: Action
         data object RemoveRoutes: Action
 }

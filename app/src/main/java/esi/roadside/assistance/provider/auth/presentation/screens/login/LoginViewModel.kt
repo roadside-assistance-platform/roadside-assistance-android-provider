@@ -77,7 +77,11 @@ class LoginViewModel(
                     }
                 }
             }
-            LoginAction.TogglePasswordHidden -> TODO()
+            LoginAction.TogglePasswordHidden -> {
+                _state.update {
+                    it.copy(passwordHidden = !it.passwordHidden)
+                }
+            }
         }
     }
 }

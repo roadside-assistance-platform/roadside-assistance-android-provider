@@ -50,8 +50,17 @@ class AuthRepoImpl(
         }
     }
 
-    override suspend fun resetPassword(email: String, password: String): Result<ProviderModel, DomainError> {
-        TODO("Not yet implemented")
+    override suspend fun resetPassword(email: String, password: String): Result<Any, DomainError> {
+        return safeCall<Any>(CallType.RESET_PASSWORD) {
+            client.post(constructUrl(Endpoints.RESET_PASSWORD)) {
+                setBody(
+                    mapOf(
+                        "email" to email,
+                        "newPassword" to password
+                    )
+                )
+            }.body()
+        }.map { true }
     }
 
     override suspend fun update(request: UpdateModel): Result<ProviderModel, DomainError> {
@@ -66,9 +75,11 @@ class AuthRepoImpl(
         }
     }
 
-    override suspend fun sendEmail(request: SendEmailModel): Result<Boolean, DomainError> {
-        return safeCall<Any>(CallType.SEND_EMAIL) {
-            client.post(constructUrl(Endpoints.SEND_EMAIL)) {
+    override suspend fun sendEmail(request: SendEmailModel, forgot: Boolean): Result<Boolean, DomainError> {
+        return safeCall<Any>(if (forgot) CallType.SEND_FORGOT_EMAIL else CallType.SEND_EMAIL) {
+            client.post(constructUrl(
+                if (forgot) Endpoints.SEND_FORGOT_EMAIL else Endpoints.SEND_EMAIL
+            )) {
                 setBody(request)
             }.body()
         }.map { true }

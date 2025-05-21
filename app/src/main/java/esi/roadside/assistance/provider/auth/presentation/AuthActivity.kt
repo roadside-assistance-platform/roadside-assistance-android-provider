@@ -44,6 +44,7 @@ import esi.roadside.assistance.provider.auth.presentation.screens.login.LoginScr
 import esi.roadside.assistance.provider.auth.presentation.screens.reset_password.ResetPasswordScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupSecondScreen
+import esi.roadside.assistance.provider.auth.presentation.screens.signup.SignupViewModel
 import esi.roadside.assistance.provider.auth.presentation.screens.signup.VerifyEmailScreen
 import esi.roadside.assistance.provider.auth.presentation.screens.welcome.WelcomeScreen
 import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
@@ -67,8 +68,11 @@ class AuthActivity : ComponentActivity() {
                 SetSystemBarColors()
                 val navController = rememberNavController()
                 val viewModel: AuthViewModel = koinViewModel()
+                val signupViewModel: SignupViewModel = koinViewModel()
                 val step by viewModel.step.collectAsState()
                 val authUiState by viewModel.state.collectAsState()
+                val signupState by signupViewModel.state.collectAsState()
+                val otpState by signupViewModel.otpState.collectAsState()
                 val snackbarHostState = remember { SnackbarHostState() }
                 val scope = rememberCoroutineScope()
                 LaunchedEffect(Unit) {
@@ -138,15 +142,20 @@ class AuthActivity : ComponentActivity() {
                                 }
                             }
                             composable<NavRoutes.Signup> {
-                                SignupScreen {
+                                SignupScreen(signupState, signupViewModel::onAction) {
                                     navController.navigate(it)
                                 }
                             }
                             composable<NavRoutes.Signup2> {
-                                SignupSecondScreen()
+                                SignupSecondScreen(signupState, signupViewModel::onAction)
                             }
                             composable<NavRoutes.VerifyEmail> {
-                                VerifyEmailScreen()
+                                VerifyEmailScreen(
+                                    signupState,
+                                    signupViewModel::onAction,
+                                    otpState,
+                                    signupViewModel::onOtpAction
+                                )
                             }
                             composable<NavRoutes.ForgotPassword> {
                                 ResetPasswordScreen {

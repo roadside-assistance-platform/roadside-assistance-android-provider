@@ -4,6 +4,7 @@ import esi.roadside.assistance.provider.NotificationService
 import esi.roadside.assistance.provider.main.domain.use_cases.AcceptService
 import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
+import esi.roadside.assistance.provider.main.domain.use_cases.Refresh
 import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -13,5 +14,6 @@ val useCaseModule = module {
     factory { AcceptService(get()) }
     factory { DirectionsUseCase(get()) }
     factory { Logout(get()) }
+    factory { Refresh(get(), get()) }
     factory { NotificationService(androidContext()) }
 }

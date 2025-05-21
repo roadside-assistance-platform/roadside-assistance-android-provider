@@ -4,17 +4,37 @@ import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -23,13 +43,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.mapbox.geojson.LineString
@@ -63,18 +84,21 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.data.FollowPuckViewportStateOptions
 import com.mapbox.maps.plugin.viewport.data.OverviewViewportStateOptions
 import esi.roadside.assistance.provider.R
+import esi.roadside.assistance.provider.core.presentation.util.Event
+import esi.roadside.assistance.provider.core.util.composables.CollectEvents
 import esi.roadside.assistance.provider.main.domain.repository.ServiceState
 import esi.roadside.assistance.provider.main.presentation.Action
-import esi.roadside.assistance.provider.main.presentation.sheet.IdleScreen
+import esi.roadside.assistance.provider.main.presentation.components.ServiceListItem
+import esi.roadside.assistance.provider.main.presentation.components.TopBar
 import esi.roadside.assistance.provider.main.presentation.sheet.NavigatingScreen
-import esi.roadside.assistance.provider.main.presentation.sheet.WorkingScreen
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    isApproved: Boolean,
     uiState: HomeUiState,
     currentService: ServiceState,
     onAction: (Action) -> Unit,
@@ -98,7 +122,13 @@ fun HomeScreen(
     var lightPreset by remember {
         mutableStateOf(LightPresetValue.DAY)
     }
-
+    CollectEvents { event ->
+        if (event is Event.RemoveRoutes) followLocation(state) {
+            it?.let {
+                onAction(Action.SetLocation(it))
+            }
+        }
+    }
     LaunchedEffect(uiState.directions) {
         routeLine = uiState.directions?.let { route ->
             Log.i("MainActivity", "Route: ${route.geometry}")
@@ -116,57 +146,33 @@ fun HomeScreen(
             }
         }
     }
+    val sheetState = rememberStandardBottomSheetState(SheetValue.Hidden, skipHiddenState = false)
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(currentService.providerState) {
+        scope.launch {
+            if (currentService.providerState in setOf(ProviderState.NAVIGATING, ProviderState.WORKING))
+                sheetState.expand()
+            else
+                sheetState.hide()
+        }
+    }
     val marker = rememberIconImage(R.drawable.baseline_location_pin_24)
-    val bottomSheetState = rememberStandardBottomSheetState(SheetValue.Expanded, confirmValueChange = {
-        it != SheetValue.Hidden
-    })
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     BottomSheetScaffold(
+        modifier = modifier,
+        sheetPeekHeight = 0.dp,
+        scaffoldState = scaffoldState,
         sheetContent = {
-            AnimatedVisibility(currentService.selected == null) {
-                Text(
-                    stringResource(R.string.nearby_clients),
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp).fillMaxWidth()
+            if (currentService.providerState in setOf(ProviderState.NAVIGATING, ProviderState.WORKING)) {
+                NavigatingScreen(
+                    currentService.clientInfo,
+                    uiState.message,
+                    onAction
                 )
             }
-            AnimatedContent(currentService.providerState) {
-                when(it) {
-                    ProviderState.IDLE -> IdleScreen(
-                        currentService.services,
-                        currentService.selected,
-                        uiState.loading,
-                        onAction,
-                        state,
-                        bottomSheetState,
-                    )
-                    ProviderState.NAVIGATING -> NavigatingScreen(
-                        uiState.directions?.let {
-                            (uiState.directions.duration / 60).roundToInt()
-                        },
-                        {
-                            currentService.serviceModel?.serviceLocation?.let {
-                                val intent = Intent(
-                                    Intent.ACTION_VIEW,
-                                    "https://www.google.com/maps/dir/?api=1&destination=${it.latitude},${it.longitude}".toUri()
-                                )
-                                context.startActivity(intent)
-                            }
-                        }
-                    ) {
-                        onAction(Action.Arrived)
-                    }
-                    ProviderState.WORKING -> WorkingScreen()
-                    ProviderState.COMPLETED -> return@AnimatedContent
-                }
-            }
-        },
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 120.dp,
-        modifier = modifier
+        }
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().padding(it)) {
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
                 mapViewportState = state,
@@ -177,13 +183,18 @@ fun HomeScreen(
                     )
                 },
                 scaleBar = {
-                    ScaleBar(
-                        modifier = Modifier.navigationBarsPadding(),
-                        alignment = Alignment.BottomStart
-                    )
+//                    ScaleBar(
+//                        modifier = Modifier.navigationBarsPadding(),
+//                        alignment = Alignment.BottomStart
+//                    )
                 },
                 logo = {
-                    Logo(alignment = Alignment.TopStart)
+                    Logo(
+                        alignment = Alignment.TopStart,
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .padding(8.dp)
+                    )
                 },
                 style = {
                     if (routeLine != null)
@@ -221,8 +232,141 @@ fun HomeScreen(
                 }
                 MapEffect(Unit) { mapView ->
                     followLocation(state, mapView) {
-                        if (it != null) {
+                        it?.let {
                             onAction(Action.SetLocation(it))
+                        }
+                    }
+                }
+            }
+            TopBar(
+                serviceState = currentService,
+                modifier = Modifier.align(Alignment.TopStart),
+                loading = uiState.loading,
+                eta = uiState.directions?.let {
+                    (uiState.directions.duration / 60)
+                },
+                onArrived = {
+                    onAction(Action.Arrived)
+                },
+                onOpenGoogleMaps = {
+                    currentService.serviceModel?.serviceLocation?.let {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://www.google.com/maps/dir/?api=1&destination=${it.latitude},${it.longitude}".toUri()
+                        )
+                        context.startActivity(intent)
+                    }
+                }
+            )
+            BottomContent(
+                isApproved = isApproved,
+                serviceState = currentService,
+                loading = uiState.loading,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onRefresh = {
+                    onAction(Action.RefreshUser)
+                },
+                onFollowLocation = {
+                    followLocation(state) {
+                        it?.let {
+                            onAction(Action.SetLocation(it))
+                        }
+                    }
+                },
+                onIndexChange = {
+                    onAction(Action.SelectService(it))
+                }
+            ) {
+                onAction(Action.AcceptService(it))
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomContent(
+    isApproved: Boolean,
+    serviceState: ServiceState,
+    loading: Boolean,
+    modifier: Modifier = Modifier,
+    onRefresh: () -> Unit,
+    onFollowLocation: () -> Unit,
+    onIndexChange: (Int) -> Unit,
+    onAccept: (Int) -> Unit,
+) {
+    val pagerState = rememberPagerState {
+        serviceState.services.size
+    }
+    val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+    var isScrolledByUser by remember { mutableStateOf(false) }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.isScrollInProgress }.collect { isScrolling ->
+            if (isScrolledByUser && !isScrolling) {
+                onIndexChange(pagerState.settledPage)
+            }
+            isScrolledByUser = isScrolling && isDragged
+        }
+    }
+    AnimatedVisibility(serviceState.providerState == ProviderState.IDLE, modifier.fillMaxWidth()) {
+        Column(
+            Modifier
+                .padding(bottom = 16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FloatingActionButton(
+                onFollowLocation,
+                Modifier
+                    .align(Alignment.End)
+                    .padding(horizontal = 16.dp),
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = contentColorFor(MaterialTheme.colorScheme.tertiaryContainer)
+            ) {
+                Icon(Icons.Default.MyLocation, null)
+            }
+            AnimatedVisibility(serviceState.services.isNotEmpty()) {
+                HorizontalPager(
+                    pagerState,
+                    modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    ServiceListItem(serviceState.services[it], loading, { onIndexChange(it) }) {
+                        onAccept(it)
+                    }
+                }
+            }
+            AnimatedVisibility(!isApproved, Modifier.padding(horizontal = 16.dp)) {
+                ElevatedCard(
+                    onClick = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    shape = MaterialTheme.shapes.large,
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(stringResource(R.string.not_approved), Modifier.weight(1f))
+                        Button(onRefresh, enabled = !loading) {
+                            AnimatedContent(loading) {
+                                if (it)
+                                    CircularProgressIndicator(
+                                        Modifier.size(ButtonDefaults.IconSize),
+                                        strokeWidth = 2.dp
+                                    )
+                                else
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        null,
+                                        Modifier.size(ButtonDefaults.IconSize)
+                                    )
+                            }
+                            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                            Text(stringResource(R.string.refresh))
                         }
                     }
                 }

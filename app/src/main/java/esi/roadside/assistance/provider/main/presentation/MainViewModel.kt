@@ -6,15 +6,17 @@ import androidx.lifecycle.viewModelScope
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event.ExitToAuthActivity
 import esi.roadside.assistance.provider.core.presentation.util.sendEvent
+import esi.roadside.assistance.provider.core.util.account.AccountManager
 import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
 import esi.roadside.assistance.provider.main.domain.models.toLocationModel
-import esi.roadside.assistance.provider.main.domain.repository.ServiceAction
 import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.*
 import esi.roadside.assistance.provider.main.domain.repository.ServiceManager
 import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
+import esi.roadside.assistance.provider.main.domain.use_cases.Refresh
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
+import esi.roadside.assistance.provider.main.presentation.routes.settings.ChangePasswordState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +29,9 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     val serviceManager: ServiceManager,
+    accountManager: AccountManager,
     val directionsUseCase: DirectionsUseCase,
+    val refreshUseCase: Refresh,
     val logoutUseCase: Logout,
 ): ViewModel() {
     private val _userNotification = MutableStateFlow(emptyList<UserNotificationModel>())
@@ -37,6 +41,8 @@ class MainViewModel(
     val homeUiState = _homeUiState.asStateFlow()
 
     val serviceState = serviceManager.service
+
+    val isApproved = accountManager.getUserFlow().map { it.isApproved }
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
@@ -96,7 +102,7 @@ class MainViewModel(
         when(action) {
             Action.HideFinishDialog -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    serviceManager.onAction(ServiceAction.Finish)
+                    serviceManager.onAction(Finish)
                 }
             }
             is Action.SetLocation -> {
@@ -135,7 +141,7 @@ class MainViewModel(
             }
             Action.UnSelectService -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    serviceManager.onAction(ServiceAction.UnSelectService)
+                    serviceManager.onAction(UnSelectService)
                 }
             }
             is Action.SendEvent -> {
@@ -143,7 +149,7 @@ class MainViewModel(
             }
             Action.Arrived -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    serviceManager.onAction(ServiceAction.Arrived)
+                    serviceManager.onAction(Arrived)
                 }
             }
             Action.LocationUpdate -> {
@@ -161,6 +167,27 @@ class MainViewModel(
             Action.RemoveRoutes -> {
                 _homeUiState.update {
                     it.copy(directions = null)
+                }
+            }
+            Action.RefreshUser -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _homeUiState.update {
+                        it.copy(loading = true)
+                    }
+                    refreshUseCase()
+                    _homeUiState.update {
+                        it.copy(loading = false)
+                    }
+                }
+            }
+            Action.SendMessage -> {
+                _homeUiState.update {
+                    it.copy(message = "")
+                }
+            }
+            is Action.SetMessage -> {
+                _homeUiState.update {
+                    it.copy(message = action.message)
                 }
             }
         }

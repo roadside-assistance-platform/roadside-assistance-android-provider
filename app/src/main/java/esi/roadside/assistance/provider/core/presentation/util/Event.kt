@@ -15,7 +15,5 @@ sealed interface Event {
     data object LaunchMainActivity: Event
     data class ShowAuthActivityMessage(val text: Int): Event
     data class ShowMainActivityMessage(val text: Int): Event
-    data object ShowRequestAssistance: Event
-    data object HideRequestAssistance: Event
     data object RemoveRoutes: Event
 }

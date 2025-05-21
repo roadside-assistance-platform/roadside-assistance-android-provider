@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.LocaleList
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,11 +32,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.core.app.LocaleManagerCompat
 import androidx.core.os.LocaleListCompat
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.data.SettingsDataStore
+import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
 import esi.roadside.assistance.provider.main.presentation.constants.Settings.languages
+import esi.roadside.assistance.provider.main.util.plus
 import esi.roadside.assistance.provider.settings.presentation.settingsRadioItems
 import esi.roadside.assistance.provider.settings.util.findActivity
 import kotlinx.coroutines.launch
@@ -47,38 +51,27 @@ fun LanguageScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val dataStore = koinInject<SettingsDataStore>()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val language by dataStore.language.collectAsState(initial = "system")
     var selectedLanguage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         modifier =
             modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        stringResource(id = R.string.language),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { dispatcher?.onBackPressed() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
+            TopAppBar(
+                title = stringResource(R.string.language),
+                background = R.drawable.union,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             state = listState,
-            contentPadding = paddingValues,
+            contentPadding = paddingValues + PaddingValues(vertical = 24.dp),
         ) {
             settingsRadioItems(
                 languages.toList(),

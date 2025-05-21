@@ -1,87 +1,161 @@
 package esi.roadside.assistance.provider.main.presentation.sheet
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
+import esi.roadside.assistance.provider.main.domain.models.ClientInfo
+import esi.roadside.assistance.provider.main.presentation.Action
+import esi.roadside.assistance.provider.main.presentation.components.MyImage
+import esi.roadside.assistance.provider.main.util.launchCallIntent
+import esi.roadside.assistance.provider.main.util.plus
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NavigatingScreen(
-    eta: Int?,
-    onOpenGoogleMaps: () -> Unit,
-    modifier: Modifier = Modifier,
-    onArrived: () -> Unit,
+    client: ClientInfo?,
+    message: String,
+    onAction: (Action) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val isKeyboardVisible = WindowInsets.isImeVisible
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val isFocused by remember {
+        derivedStateOf { focused || isKeyboardVisible }
+    }
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     LazyColumn(
         modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(vertical = 16.dp),
+        contentPadding = PaddingValues(vertical = 16.dp) + WindowInsets.navigationBars.asPaddingValues(),
         verticalArrangement = Arrangement.spacedBy(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        item {
-            Text(
-                stringResource(R.string.navigating),
-                modifier = Modifier.padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-        item {
-            Text(
-                eta?.let { "Estimated time of arrival: $eta minutes" }
-                    ?: stringResource(R.string.eta_not_available),
-                modifier = Modifier.padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        item {
-            Row(
-                Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(
-                    onOpenGoogleMaps,
-                    Modifier.weight(1f)
+        client?.let {
+            item {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, null, Modifier.size(ButtonDefaults.IconSize))
-                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(
-                        stringResource(R.string.open_in_google_maps),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    MyImage(
+                        model = client.photo,
+                        icon = Icons.Default.Person,
+                        modifier = Modifier.size(60.dp),
+                        shape = CircleShape,
                     )
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            client.fullName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            client.phone,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                Button(
-                    onArrived,
-                    Modifier.weight(1f)
+            }
+            item {
+                Row(
+                    Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Navigation, null, Modifier.size(ButtonDefaults.IconSize))
-                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(
-                        stringResource(R.string.arrived),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    AnimatedVisibility(!isFocused) {
+                        FilledIconButton({ context.launchCallIntent(client.phone) }) {
+                            Icon(Icons.Default.Phone, null)
+                        }
+                    }
+                    OutlinedTextField(
+                        value = message,
+                        onValueChange = { onAction(Action.SetMessage(it)) },
+                        shape = RoundedCornerShape(100),
+                        modifier = Modifier.weight(1f).focusRequester(focusRequester),
+                        interactionSource = interactionSource,
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
+                        placeholder = {
+                            Text(
+                                stringResource(R.string.chat_placeholder),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                {
+                                    { onAction(Action.SendMessage) }
+                                    focusManager.clearFocus(true)
+                                },
+                                modifier = Modifier.padding(end = 2.dp),
+                                enabled = message.isNotBlank(),
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor =
+                                        if (isFocused) MaterialTheme.colorScheme.primary
+                                        else Color.Unspecified,
+                                    contentColor =
+                                        if (isFocused) MaterialTheme.colorScheme.onPrimary
+                                        else Color.Unspecified,
+                                    disabledContainerColor = Color.Transparent,
+                                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                ),
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.Send, null)
+                            }
+                        },
                     )
                 }
             }

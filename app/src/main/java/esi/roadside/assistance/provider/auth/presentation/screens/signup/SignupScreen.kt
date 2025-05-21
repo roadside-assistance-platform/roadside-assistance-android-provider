@@ -47,9 +47,12 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit) {
-    val viewModel: SignupViewModel = koinViewModel()
-    val uiState by viewModel.state.collectAsState()
+fun SignupScreen(
+    uiState: SignupUiState,
+    onAction: (SignupAction) -> Unit,
+    modifier: Modifier = Modifier,
+    onNavigate: (NavRoutes) -> Unit
+) {
 
     BackgroundBox(R.drawable.signup_background, modifier) {
         Column(
@@ -83,7 +86,7 @@ fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit)
                 )
                 Spacer(Modifier.height(18.dp))
                 ProfilePicturePicker(uiState.image, enabled = !uiState.loading) {
-                    viewModel.onAction(SignupAction.SetImage(it))
+                    onAction(SignupAction.SetImage(it))
                 }
             }
             Column(
@@ -94,7 +97,7 @@ fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit)
                 MyTextField(
                     uiState.fullName,
                     {
-                        viewModel.onAction(SignupAction.SetFullName(it))
+                        onAction(SignupAction.SetFullName(it))
                     },
                     label = stringResource(R.string.full_name),
                     placeholder = stringResource(R.string.full_name_placeholder),
@@ -105,7 +108,7 @@ fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit)
                 MyTextField(
                     uiState.phoneNumber,
                     {
-                        viewModel.onAction(SignupAction.SetPhoneNumber(it))
+                        onAction(SignupAction.SetPhoneNumber(it))
                     },
                     label = stringResource(R.string.phone_number),
                     placeholder = stringResource(R.string.phone_number_placeholder),
@@ -127,7 +130,7 @@ fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit)
                                     .clip(MaterialTheme.shapes.small)
                                     .padding(end = 2.dp)
                                     .clickable {
-                                    viewModel.onAction(
+                                    onAction(
                                         if (uiState.categories.contains(category))
                                             SignupAction.RemoveCategory(category)
                                         else SignupAction.AddCategory(category)
@@ -139,7 +142,7 @@ fun SignupScreen(modifier: Modifier = Modifier, onNavigate: (NavRoutes) -> Unit)
                                 Checkbox(
                                     checked = uiState.categories.contains(category),
                                     onCheckedChange = {
-                                        viewModel.onAction(
+                                        onAction(
                                             if (it) SignupAction.AddCategory(category)
                                             else SignupAction.RemoveCategory(category)
                                         )

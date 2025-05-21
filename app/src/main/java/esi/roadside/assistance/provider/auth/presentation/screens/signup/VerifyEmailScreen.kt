@@ -14,8 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,13 +26,15 @@ import esi.roadside.assistance.provider.auth.presentation.OtpAction
 import esi.roadside.assistance.provider.auth.presentation.util.Button
 import esi.roadside.assistance.provider.auth.presentation.util.MyScreen
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun VerifyEmailScreen(modifier: Modifier = Modifier) {
-    val viewModel: SignupViewModel = koinViewModel()
-    val uiState by viewModel.state.collectAsState()
-    val otpState by viewModel.otpState.collectAsState()
+fun VerifyEmailScreen(
+    uiState: SignupUiState,
+    onAction: (SignupAction) -> Unit,
+    otpState: OtpState,
+    onOtpAction: (OtpAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val focusRequesters = remember {
         List(6) { FocusRequester() }
     }
@@ -67,7 +67,7 @@ fun VerifyEmailScreen(modifier: Modifier = Modifier) {
                         }
                         else -> Unit
                     }
-                    viewModel.onOtpAction(action)
+                    onOtpAction(action)
                 },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
             )
@@ -75,7 +75,7 @@ fun VerifyEmailScreen(modifier: Modifier = Modifier) {
                 Text(stringResource(R.string.didn_t_receive_anything))
                 TextButton(
                     {
-                        viewModel.onAction(SignupAction.SendCodeToEmail)
+                        onAction(SignupAction.SendCodeToEmail)
                     },
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     colors = ButtonDefaults.textButtonColors(
@@ -94,7 +94,7 @@ fun VerifyEmailScreen(modifier: Modifier = Modifier) {
                         Modifier.fillMaxWidth(),
                         enabled = !uiState.loading,
                         onClick = {
-                            viewModel.onAction(SignupAction.Verify)
+                            onAction(SignupAction.Verify)
                         }
                     )
             }
