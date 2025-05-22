@@ -122,7 +122,6 @@ object ValidateInput {
 //        currentPassword: String,
         newPassword: String,
         confirmNewPassword: String,
-    ): InputError? {
-        return validatePassword(newPassword) ?: validateConfirmPassword(newPassword, confirmNewPassword)
-    }
+    ): InputError? =
+        validatePassword(newPassword) ?: validateConfirmPassword(newPassword, confirmNewPassword)
 }
