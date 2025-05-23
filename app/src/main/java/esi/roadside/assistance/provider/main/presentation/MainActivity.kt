@@ -31,19 +31,17 @@ import esi.roadside.assistance.provider.core.presentation.util.Event
 import esi.roadside.assistance.provider.core.presentation.util.Event.MainNavigate
 import esi.roadside.assistance.provider.core.util.composables.CollectEvents
 import esi.roadside.assistance.provider.core.util.composables.SetSystemBarColors
-import esi.roadside.assistance.provider.main.domain.repository.ServiceManager
+import esi.roadside.assistance.provider.main.presentation.routes.home.followLocation
 import esi.roadside.assistance.provider.main.util.isPermissionGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.get
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
     lateinit var permissionsManager: PermissionsManager
     lateinit var mainViewModel: MainViewModel
-    val service = get<ServiceManager>()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -137,7 +135,7 @@ class MainActivity : ComponentActivity() {
         val action = intent.getStringExtra("action")
         serviceId?.let {
             CoroutineScope(Dispatchers.IO).launch {
-                service.service.first().services.indexOfFirst {
+                mainViewModel.serviceState.first().services.indexOfFirst {
                     it.id == serviceId
                 }.takeIf { it != -1 }?.let { service ->
                     if (action == "accept") {

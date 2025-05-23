@@ -1,6 +1,9 @@
 package esi.roadside.assistance.provider.main.domain.repository
 
+import android.content.Intent
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import esi.roadside.assistance.provider.NotificationService
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.data.SettingsDataStore
 import esi.roadside.assistance.provider.core.data.mappers.toLocation
@@ -22,21 +25,21 @@ import esi.roadside.assistance.provider.main.domain.use_cases.AcceptService
 import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
-import esi.roadside.assistance.provider.main.util.NotificationManager
 import esi.roadside.assistance.provider.main.util.QueuesManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class ServiceManager(
     accountManager: AccountManager,
-    private val notificationManager: NotificationManager,
+    private val notificationService: NotificationService,
     val queuesManager: QueuesManager,
     val dataStore: SettingsDataStore,
     val directionsUseCase: DirectionsUseCase,
@@ -62,7 +65,7 @@ class ServiceManager(
 
     suspend fun consume(onLocationRequest: suspend () -> LocationModel?) {
         Log.i("MainViewModel", "Consuming")
-        queuesManager.notifications.consumeEach { notification ->
+        queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
             Log.i("MainViewModel", "New message: $notification")
             when(notification) {
                 is PolymorphicNotification.Service -> {
@@ -87,7 +90,7 @@ class ServiceManager(
                 is Message -> {
 
                 }
-                else -> return@consumeEach
+                else -> return@collectLatest
             }
         }
     }
@@ -107,17 +110,39 @@ class ServiceManager(
                     }
                     val distance = directions.routes.minOfOrNull { it.distance } ?: -1.0
                     if (!maxDistanceFilter.first() || (distance / 1000) <= maxDistance.first()) {
+                        val content = StringBuilder()
                         var locationString = ""
-                        reverseGeocodingUseCase(serviceLocation).onSuccess {
-                            locationString = it
-                        }
                         val serviceInfo = action.service.toServiceInfo(
                             directions = directions,
                             locationString = locationString
                         )
-                        notificationManager.showServiceNotification(
-                            serviceInfo,
-                            _service.value.services.size
+                        content.append("Category: ${serviceInfo.category}\n")
+                        if (serviceInfo.description.isNotBlank())
+                            content.append("Description: ${serviceInfo.description}\n")
+                        content.append("Distance: ${String.format(Locale.getDefault(), "%.2f", distance / 1000)} km\n")
+                        reverseGeocodingUseCase(serviceLocation).onSuccess {
+                            locationString = it
+                            content.append("Location: $it\n")
+                        }
+                        notificationService.showNotification(
+                            _service.value.services.size,
+                            R.string.new_service_request,
+                            content.toString(),
+                            mapOf(
+                                "from_notification" to true,
+                                "service_id" to serviceInfo.id,
+                            ),
+                            NotificationCompat.Action(
+                                R.drawable.baseline_check_24,
+                                "Accept",
+                                notificationService.getPendingIntent {
+                                    val intent = it
+                                    intent.putExtra("serviceId", serviceInfo.id)
+                                    intent.putExtra("action", "accept")
+                                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                    intent
+                                }
+                            )
                         )
                         _service.update {
                             it.copy(
@@ -148,6 +173,7 @@ class ServiceManager(
                         }
                     }
                 }
+                sendEvent(Event.RemoveRoutes)
             }
             is ServiceAction.ServiceRemoved -> {
                 if (action.exceptionId?.let { it != user.first().id } != false) {

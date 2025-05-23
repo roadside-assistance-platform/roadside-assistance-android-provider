@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import esi.roadside.assistance.client.main.util.formatShortTime
 import esi.roadside.assistance.client.main.util.formatTime
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.main.domain.repository.ServiceState
@@ -95,7 +96,7 @@ fun TopBar(
                             )
                             val text = when(it) {
                                 ProviderState.NAVIGATING ->
-                                    "Remaining time: ${etaTime?.formatTime() ?: stringResource(R.string.unavailable)}"
+                                    "Arrival time: ${etaTime?.formatShortTime() ?: stringResource(R.string.unavailable)}"
                                 else -> stringResource(it.text)
                             }
                             Text(
