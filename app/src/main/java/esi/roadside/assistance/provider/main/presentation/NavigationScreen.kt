@@ -1,5 +1,6 @@
 package esi.roadside.assistance.provider.main.presentation
 
+import android.media.Rating
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +9,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import esi.roadside.assistance.provider.R
-import esi.roadside.assistance.provider.core.presentation.components.Dialog
+import esi.roadside.assistance.provider.core.presentation.components.IconDialog
 import esi.roadside.assistance.provider.core.util.intUpDownTransSpec
 import esi.roadside.assistance.provider.main.presentation.components.RatingBar
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeScreen
@@ -43,10 +46,10 @@ import esi.roadside.assistance.provider.main.presentation.routes.settings.Change
 import esi.roadside.assistance.provider.main.presentation.routes.settings.CustomizeAppScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.HelpScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.LanguageScreen
+import esi.roadside.assistance.provider.main.presentation.routes.settings.MapsSettingsScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.PrivacyPolicyScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.SettingsScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.TermsOfServiceScreen
-import esi.roadside.assistance.provider.main.presentation.routes.settings.MapsSettingsScreen
 import soup.compose.material.motion.animation.materialFadeThroughIn
 import soup.compose.material.motion.animation.materialFadeThroughOut
 
@@ -176,48 +179,25 @@ fun NavigationScreen(
             }
         }
     }
-    Dialog(
-        title = stringResource(R.string.service_completed),
+    IconDialog(
+        icon = Icons.Default.Check,
+        title = stringResource(R.string.you_earned_dzd, currentService.price),
+        text = stringResource(R.string.thank_you_for_your_service),
         visible = currentService.providerState == ProviderState.COMPLETED,
         onDismissRequest = {
             mainViewModel.onAction(Action.HideFinishDialog)
         },
-        okListener = {
-            mainViewModel.onAction(Action.HideFinishDialog)
-        },
     ) {
-        Column(
-            Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Text(
-                stringResource(R.string.you_earned),
-                Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                stringResource(R.string.dzd, currentService.price),
-                Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
-            )
-            currentService.rating?.let {
+        currentService.rating?.let {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
                 RatingBar(
-                    it,
-                    {},
-                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    starsColor = MaterialTheme.colorScheme.tertiary
+                    rating = it,
+                    modifier = Modifier.fillMaxWidth(.5f)
                 )
-            } ?: Text(
-                stringResource(R.string.no_rating),
-                Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            }
+        }
+        Button({ mainViewModel.onAction(Action.HideFinishDialog) }) {
+            Text(stringResource(R.string.ok))
         }
     }
 }

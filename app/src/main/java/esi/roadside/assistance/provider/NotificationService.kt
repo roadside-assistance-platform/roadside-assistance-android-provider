@@ -74,7 +74,7 @@ class NotificationService(private val context: Context) {
                 }
             }
         }
-        val pendingIntent = intent?.let {
+        val pendingIntent = intent.let {
             PendingIntent.getActivity(
                 context,
                 0,

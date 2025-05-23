@@ -8,8 +8,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -18,20 +16,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.compose.rememberNavController
-import com.mapbox.android.core.permissions.PermissionsListener
-import com.mapbox.android.core.permissions.PermissionsManager
-import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.AuthActivity
-import esi.roadside.assistance.provider.core.presentation.components.IconDialog
 import esi.roadside.assistance.provider.core.presentation.theme.AppTheme
 import esi.roadside.assistance.provider.core.presentation.util.Event
 import esi.roadside.assistance.provider.core.presentation.util.Event.MainNavigate
 import esi.roadside.assistance.provider.core.util.composables.CollectEvents
 import esi.roadside.assistance.provider.core.util.composables.SetSystemBarColors
-import esi.roadside.assistance.provider.main.presentation.routes.home.followLocation
 import esi.roadside.assistance.provider.main.util.isPermissionGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,41 +32,42 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
-    lateinit var permissionsManager: PermissionsManager
     lateinit var mainViewModel: MainViewModel
+    val permissions =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        else
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!PermissionsManager.areLocationPermissionsGranted(this)) {
-            permissionsManager = PermissionsManager(
-                object : PermissionsListener {
-                    override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-                        TODO("Not yet implemented")
-                    }
-
-                    override fun onPermissionResult(granted: Boolean) {
-                        TODO("Not yet implemented")
-                    }
-                }
-            )
-            permissionsManager.requestLocationPermissions(this)
-        }
         setContent {
             SetSystemBarColors()
             val navController = rememberNavController()
             mainViewModel = koinViewModel()
             val scope = rememberCoroutineScope()
             val snackbarHostState = remember { SnackbarHostState() }
-            var isGranted by remember { mutableStateOf<Boolean?>(null) }
+            var isGranted by remember { mutableStateOf<Map<String, Boolean?>>(
+                mapOf()
+            ) }
             val launcher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) {
-                isGranted = it
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { granted ->
+                isGranted = granted
+                if (granted[Manifest.permission.POST_NOTIFICATIONS] == true) {
+                    NotificationManagerCompat.from(this).areNotificationsEnabled()
+                }
             }
             LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                isGranted = permissions.associateWith {
+                    isPermissionGranted(it).takeIf { it == true }
+                }
             }
             CollectEvents {
                 when(it) {
@@ -100,31 +93,24 @@ class MainActivity : ComponentActivity() {
                     mainViewModel = mainViewModel,
                     onAction = mainViewModel::onAction
                 )
-                IconDialog(
-                    visible = isGranted == false,
-                    onDismissRequest = {
-                        isGranted = null
-                    },
-                    title = stringResource(R.string.notification_permission_title),
-                    text = stringResource(R.string.notification_permission_text),
-                    icon = Icons.Default.NotificationsActive,
-                    okListener = {
-                        isGranted = null
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            val permission = Manifest.permission.POST_NOTIFICATIONS
-                            if (isPermissionGranted(permission)) {
-                                NotificationManagerCompat.from(this).areNotificationsEnabled()
-                            } else {
-                                launcher.launch(permission)
-                            }
-                        } else {
-                            NotificationManagerCompat.from(this).areNotificationsEnabled()
+                PermissionsDialog(
+                    isGranted = isGranted,
+                    refresh = {
+                        isGranted = permissions.associateWith {
+                            isPermissionGranted(it)
                         }
-                    },
-                    cancelListener = {
-                        isGranted = null
-                    },
-                )
+                    }
+                ) {
+                    val denied = permissions.filter { isGranted[it] == false }
+                    if (denied.isNotEmpty()) {
+                        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = android.net.Uri.fromParts("package", packageName, null)
+                        }
+                        startActivity(intent)
+                    } else {
+                        launcher.launch(permissions)
+                    }
+                }
             }
         }
     }

@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.client.main.util.formatShortTime
-import esi.roadside.assistance.client.main.util.formatTime
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.main.domain.repository.ServiceState
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState

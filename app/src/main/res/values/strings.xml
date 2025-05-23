@@ -337,6 +337,7 @@
     <string name="no_rating">The client didn\'t submit the rating</string>
     <string name="dzd">%1$s DZD</string>
     <string name="you_earned">You\'ve earned</string>
+    <string name="you_earned_dzd">You\'ve earned %1$s DZD</string>
     <string name="max_distance_filter">Distance limit</string>
     <string name="max_distance_filter_desc">Filter received assistance request by distance limit</string>
     <string name="max_distance">Maximum distance</string>
@@ -360,4 +361,12 @@
     <string name="new_password">New Password</string>
     <string name="confirm_new_password">Confirm new password</string>
     <string name="new_service_request">New Service Request</string>
+    <string name="permissions_required">Permissions required</string>
+    <string name="permissions_required_text">To continue, please grant the required permissions. These are necessary for the app to function properly.</string>
+    <string name="request_permission">Request</string>
+    <string name="denied">Denied</string>
+    <string name="granted">Granted</string>
+    <string name="location_permission">Fine location</string>
+    <string name="notification_permission">Notifications</string>
+    <string name="thank_you_for_your_service">Thank you for your service</string>
 </resources>
