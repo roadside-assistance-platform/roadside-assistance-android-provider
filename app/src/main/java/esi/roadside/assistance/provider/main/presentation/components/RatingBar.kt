@@ -28,16 +28,16 @@ fun RatingBar(
 ) {
     val filledStars = floor(rating).toInt()
     Row(modifier = modifier.pointerInput(onRatingChange) {
-            if (onRatingChange != null) {
-                detectTapGestures(
-                    onTap = { offset ->
-                        val starWidth = size.width / stars
-                        val newRating = ((offset.x / starWidth) + 0.5).toInt()
-                        onRatingChange(newRating.toDouble())
-                    }
-                )
-            }
+        if (onRatingChange != null) {
+            detectTapGestures(
+                onTap = { offset ->
+                    val starWidth = size.width / stars
+                    val newRating = ((offset.x / starWidth) + 0.5).toInt()
+                    onRatingChange(newRating.toDouble())
+                }
+            )
         }
+    }
     ) {
         repeat(stars) {
             Box(Modifier.weight(1f).aspectRatio(1f)) {
@@ -61,6 +61,7 @@ fun RatingBar(
         }
     }
 }
+
 
 
 @Preview
