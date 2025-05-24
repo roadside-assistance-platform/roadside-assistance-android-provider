@@ -30,7 +30,7 @@ object Settings {
             "ar" to R.string.arabic,
             "es" to R.string.spanish,
             "it" to R.string.italian,
-            "in" to R.string.hindi,
+            "hi" to R.string.hindi,
         )
 
     val themeOptions =
@@ -55,11 +55,6 @@ object Settings {
                 R.string.change_password,
                 Icons.Outlined.Password,
                 NavRoutes.ChangePassword
-            ),
-            LargeSettingsItem(
-                R.string.delete_account,
-                Icons.Outlined.Delete,
-                NavRoutes.DeleteAccount
             ),
         )
     )
