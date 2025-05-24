@@ -48,12 +48,13 @@ fun InformationCard(
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    editable: Boolean = true,
     focusRequester: FocusRequester = remember { FocusRequester() },
     error: InputError? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focus by interactionSource.collectIsFocusedAsState()
-    AnimatedContent(enabled) {
+    AnimatedContent(enabled and editable) {
         if (it)
             MyTextField(
                 value = value,

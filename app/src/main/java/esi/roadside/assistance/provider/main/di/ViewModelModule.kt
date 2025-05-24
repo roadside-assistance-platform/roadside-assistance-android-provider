@@ -11,7 +11,7 @@ val viewModelModule = module {
         MainViewModel(get(), get(), get(), get(), get())
     }
     viewModel {
-        ProfileViewModel(get(), get(), get(), get())
+        ProfileViewModel(get(), get(), get(), get(), get())
     }
     viewModel {
         ChangePasswordViewModel(get(), get())

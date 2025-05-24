@@ -18,4 +18,5 @@ interface AuthRepo {
     suspend fun sendEmail(request: SendEmailModel, forgot: Boolean = false): Result<Boolean, DomainError>
     suspend fun verifyEmail(request: VerifyEmailModel): Result<Boolean, DomainError>
     suspend fun authHome(): Result<Boolean, DomainError>
+    suspend fun getIsApproved(id: String): Result<Boolean, DomainError>
 }

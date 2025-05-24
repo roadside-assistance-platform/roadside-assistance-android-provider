@@ -13,6 +13,7 @@ data class ProviderUi(
     val password: String = "",
     val phone: String = "",
     val photo: Uri? = null,
+    val isApproved: Boolean = false,
     val location: LocationModel = LocationModel(0.0, 0.0),
     val categories: Set<Categories> = emptySet(),
 ) {

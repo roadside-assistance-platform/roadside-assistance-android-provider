@@ -17,6 +17,7 @@ import esi.roadside.assistance.provider.core.data.networking.safeCall
 import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.core.domain.util.Result
 import esi.roadside.assistance.provider.core.domain.util.map
+import esi.roadside.assistance.provider.main.domain.models.IsApprovedResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -97,5 +98,13 @@ class AuthRepoImpl(
         return safeCall<String>(CallType.HOME) {
             client.get(constructUrl(Endpoints.HOME))
         }.map { true }
+    }
+
+    override suspend fun getIsApproved(id: String): Result<Boolean, DomainError> {
+        return safeCall<IsApprovedResponse> {
+            client.get(constructUrl(Endpoints.IS_APPROVED).replace("{id}", id))
+        }.map {
+            it.data.isApproved
+        }
     }
 }

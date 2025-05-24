@@ -74,6 +74,14 @@ class AccountManager(private val context: Context) {
         }
     }
 
+    suspend fun updateIsApproved(isApproved: Boolean) {
+        context.dataStore.updateData {
+            it.copy(
+                provider = it.provider.copy(isApproved = isApproved)
+            )
+        }
+    }
+
     fun getUserFlow(): Flow<Provider> {
         return context.dataStore.data.map { it.provider }
     }

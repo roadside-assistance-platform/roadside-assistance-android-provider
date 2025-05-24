@@ -1,9 +1,6 @@
 package esi.roadside.assistance.provider.auth.presentation
 
-import android.net.Uri
-import androidx.credentials.GetCredentialResponse
 import esi.roadside.assistance.provider.core.data.networking.DomainError
-import esi.roadside.assistance.provider.main.domain.Categories
 
 sealed interface Action {
     data object Initiate: Action

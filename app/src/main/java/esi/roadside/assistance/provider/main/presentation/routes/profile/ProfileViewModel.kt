@@ -9,26 +9,38 @@ import esi.roadside.assistance.provider.auth.domain.use_case.Update
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event
+import esi.roadside.assistance.provider.core.presentation.util.Event.*
 import esi.roadside.assistance.provider.core.presentation.util.EventBus.sendEvent
 import esi.roadside.assistance.provider.core.presentation.util.Field
 import esi.roadside.assistance.provider.core.presentation.util.ValidateInput
 import esi.roadside.assistance.provider.core.util.account.AccountManager
+import esi.roadside.assistance.provider.main.domain.use_cases.Refresh
 import esi.roadside.assistance.provider.main.util.QueuesManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val accountManager: AccountManager,
     private val updateUseCase: Update,
+    private val refreshUseCase: Refresh,
     private val cloudinary: Cloudinary,
     private val queuesManager: QueuesManager
 ): ViewModel() {
     private val _state = MutableStateFlow(ProfileUiState())
-    val state = _state.asStateFlow()
+    private val _user = accountManager.getUserFlow()
+    val state = combine(_state, _user) { state, account ->
+        state.copy(
+            user = state.user.copy(
+                isApproved = account.isApproved
+            )
+        )
+    }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -77,7 +89,7 @@ class ProfileViewModel(
                         },
                         onFailure = {
                             viewModelScope.launch(Dispatchers.IO) {
-                                sendEvent(Event.ShowMainActivityMessage(R.string.error))
+                                sendEvent(ShowMainActivityMessage(R.string.error))
                             }
                         },
                         onFinished = {
@@ -89,7 +101,7 @@ class ProfileViewModel(
                                         accountManager.updateUser(it)
                                     }
                                     .onError {
-                                        sendEvent(Event.ShowMainActivityMessage(it.text))
+                                        sendEvent(ShowMainActivityMessage(it.text))
                                     }
 
                                 _state.update {
@@ -120,6 +132,27 @@ class ProfileViewModel(
             is ProfileAction.EditUser -> {
                 _state.update {
                     it.copy(editUser = action.user)
+                }
+            }
+            ProfileAction.HideDialog -> {
+                _state.update {
+                    it.copy(dialog = false)
+                }
+            }
+            ProfileAction.Refresh -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.update {
+                        it.copy(loading = true)
+                    }
+                    refreshUseCase()
+                    _state.update {
+                        it.copy(loading = false, dialog = !_user.first().isApproved)
+                    }
+                }
+            }
+            ProfileAction.ShowDialog -> {
+                _state.update {
+                    it.copy(dialog = true)
                 }
             }
         }

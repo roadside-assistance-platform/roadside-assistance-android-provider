@@ -13,4 +13,5 @@ data class ProfileUiState(
     val phoneError: InputError? = null,
     val enableEditing: Boolean = false,
     val loading: Boolean = false,
+    val dialog: Boolean = false,
 )

@@ -11,6 +11,7 @@ object Endpoints {
     const val RESET_PASSWORD = "/provider/reset-password"
     const val UPDATE_PROFILE = "/provider/update/"
     const val HOME = "/home"
+    const val IS_APPROVED = "/provider/is-approved/{id}"
     const val SEND_EMAIL = "/email/send-code"
     const val SEND_FORGOT_EMAIL = "/email/forgot-code"
     const val VERIFY_EMAIL = "/email/verify-code"
