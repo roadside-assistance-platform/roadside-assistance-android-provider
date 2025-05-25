@@ -18,6 +18,5 @@ data class UpdateModel(
         phone = phone,
         photo = photo,
         serviceCategories = categories,
-        location = location?.toString()
     )
 }

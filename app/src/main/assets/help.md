@@ -63,7 +63,5 @@ A: Once you accept a request, the customer's contact information will be availab
 
 ## Contact Support
 
-If you need further assistance, contact our support team at:  
-**Email:** support@roadside-assist.com  
-**Phone:** +1-800-123-4567
+If you need further assistance, contact our support team
 

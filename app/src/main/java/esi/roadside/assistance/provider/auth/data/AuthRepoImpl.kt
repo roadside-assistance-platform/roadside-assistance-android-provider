@@ -17,6 +17,7 @@ import esi.roadside.assistance.provider.core.data.networking.safeCall
 import esi.roadside.assistance.provider.core.domain.model.ProviderModel
 import esi.roadside.assistance.provider.core.domain.util.Result
 import esi.roadside.assistance.provider.core.domain.util.map
+import esi.roadside.assistance.provider.main.data.dto.UpdateResponse
 import esi.roadside.assistance.provider.main.domain.models.IsApprovedResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -67,12 +68,12 @@ class AuthRepoImpl(
     override suspend fun update(request: UpdateModel): Result<ProviderModel, DomainError> {
         persistentCookieStorage.logAllCookies()
         val remote = request.toUpdateRequest()
-        return safeCall<Provider>(CallType.UPDATE) {
+        return safeCall<UpdateResponse>(CallType.UPDATE) {
             client.put(constructUrl("${Endpoints.UPDATE_PROFILE}${request.id}")) {
                 setBody(remote)
             }.body()
         }.map { response ->
-            response.toProviderModel()
+            response.data.user.toProviderModel()
         }
     }
 

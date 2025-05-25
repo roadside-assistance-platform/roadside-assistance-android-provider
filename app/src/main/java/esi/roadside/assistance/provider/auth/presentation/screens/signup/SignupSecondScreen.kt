@@ -3,10 +3,8 @@ package esi.roadside.assistance.provider.auth.presentation.screens.signup
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -27,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
-import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
 import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.components.PasswordTextField
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
@@ -134,11 +131,6 @@ fun SignupSecondScreen(
                         }
                 }
             }
-            TermsAndPolicy(
-                Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Max)
-            )
         }
     }
 }

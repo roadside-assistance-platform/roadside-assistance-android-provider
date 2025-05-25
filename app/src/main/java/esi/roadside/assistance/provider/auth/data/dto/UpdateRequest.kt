@@ -9,5 +9,4 @@ data class UpdateRequest(
     val phone: String? = null,
     val photo: String? = null,
     val serviceCategories: Set<Categories>? = null,
-    val location: String? = null,
 )

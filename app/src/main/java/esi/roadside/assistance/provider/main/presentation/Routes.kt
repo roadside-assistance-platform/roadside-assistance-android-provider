@@ -1,6 +1,7 @@
 package esi.roadside.assistance.provider.main.presentation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -10,7 +11,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class Routes(val route: NavRoutes, val title: Int, val icon: ImageVector) {
     HOME(NavRoutes.Map, R.string.home, Icons.Default.Home),
-    NOTIFICATIONS(NavRoutes.NotificationsList, R.string.notifications, Icons.Default.Notifications),
+    SERVICES(NavRoutes.ServicesList, R.string.history, Icons.Default.History),
     PROFILE(NavRoutes.Profile, R.string.profile, Icons.Default.Person),
     SETTINGS(NavRoutes.SettingsList, R.string.settings, Icons.Default.Settings)
 }

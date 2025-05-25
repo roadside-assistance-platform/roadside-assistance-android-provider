@@ -16,6 +16,7 @@ data class HomeUiState(
     val location: Point? = null,
     val directions: RouteX? = null,
     val loading: Boolean = false,
+    val servicesLoading: Boolean = false,
     val rating: Double? = null,
     val message: String = "",
 )

@@ -3,7 +3,6 @@ package esi.roadside.assistance.provider.auth.presentation.screens.signup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,8 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -37,13 +34,11 @@ import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.presentation.NavRoutes
 import esi.roadside.assistance.provider.auth.presentation.util.BackgroundBox
 import esi.roadside.assistance.provider.auth.presentation.util.Button
-import esi.roadside.assistance.provider.auth.presentation.util.TermsAndPolicy
 import esi.roadside.assistance.provider.core.presentation.components.MyTextField
 import esi.roadside.assistance.provider.core.presentation.components.ProfilePicturePicker
 import esi.roadside.assistance.provider.core.presentation.theme.PreviewAppTheme
 import esi.roadside.assistance.provider.core.presentation.theme.lightScheme
 import esi.roadside.assistance.provider.main.domain.Categories
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -181,11 +176,6 @@ fun SignupScreen(
                     }
                 }
             }
-            TermsAndPolicy(
-                Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Max)
-            )
         }
     }
 }

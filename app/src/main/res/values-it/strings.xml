@@ -248,7 +248,7 @@
  Se non ricevi una chiamata, puoi segnalare questo fornitore per falsa accettazione.
 
   Grazie per aver usato Depan.Go!</string>
-    <string name="no_notifications">Nessuna notifica ancora!</string>
+    <string name="no_services">Nessuna notifica ancora!</string>
     <string name="email_adress">Indirizzo email</string>
     <string name="client_name">Nome cliente</string>
     <string name="save_changes">Salva modifiche\n</string>

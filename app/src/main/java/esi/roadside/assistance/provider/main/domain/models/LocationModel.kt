@@ -13,6 +13,7 @@ data class LocationModel(
         fun fromString(location: String) = location.toLocation()
     }
     override fun toString() = "${longitude},${latitude}"
+    fun toPoint(): Point = Point.fromLngLat(longitude, latitude)
 }
 
 fun Point.toLocationModel() = LocationModel(

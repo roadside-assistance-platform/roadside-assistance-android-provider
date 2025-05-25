@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
@@ -60,6 +61,7 @@ import esi.roadside.assistance.provider.main.presentation.components.DefaultBack
 import esi.roadside.assistance.provider.main.presentation.components.InformationCard
 import esi.roadside.assistance.provider.main.presentation.components.TopAppBar
 import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -230,6 +232,15 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 editable = false,
                 enabled = state.enableEditing,
                 error = state.phoneError
+            )
+            InformationCard(
+                icon = Icons.Outlined.Star,
+                title = R.string.rating,
+                text = state.user.averageRating?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: stringResource(R.string.not_available),
+                value = "",
+                onValueChange = {},
+                editable = false,
+                enabled = state.enableEditing
             )
         }
     }

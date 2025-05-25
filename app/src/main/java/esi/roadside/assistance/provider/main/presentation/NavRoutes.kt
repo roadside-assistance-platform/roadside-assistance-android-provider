@@ -11,13 +11,13 @@ sealed class NavRoutes {
     data object Map : NavRoutes()
 
     @Serializable
-    data object Notifications : NavRoutes()
+    data object Services : NavRoutes()
 
     @Serializable
-    data object NotificationsList : NavRoutes()
+    data object ServicesList : NavRoutes()
 
     @Serializable
-    data class Notification(val id: String) : NavRoutes()
+    data class Service(val id: String) : NavRoutes()
 
     @Serializable
     data object Profile : NavRoutes()

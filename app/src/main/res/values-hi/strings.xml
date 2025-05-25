@@ -246,7 +246,7 @@
  यदि आपको कॉल नहीं मिली, तो आप इस प्रदाता को झूठी स्वीकृति के लिए रिपोर्ट कर सकते हैं।
 
   Depan.Go का उपयोग करने के लिए धन्यवाद!</string>
-    <string name="no_notifications">अभी तक कोई सूचना नहीं!</string>
+    <string name="no_services">अभी तक कोई सूचना नहीं!</string>
     <string name="email_adress">ईमेल पता</string>
     <string name="client_name">ग्राहक का नाम</string>
     <string name="save_changes">परिवर्तन सहेजें\n</string>

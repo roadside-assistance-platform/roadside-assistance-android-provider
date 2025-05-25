@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.auth.domain.use_case.ResetPassword
+import esi.roadside.assistance.provider.auth.presentation.NavRoutes
 import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event
@@ -63,6 +64,7 @@ class ChangePasswordViewModel(
                     resetPassword(email.first(), _state.value.newPassword)
                         .onSuccess {
                             sendEvent(Event.ShowMainActivityMessage(R.string.password_reset_success))
+                            sendEvent(Event.AuthNavigate(NavRoutes.Login))
                         }.onError { error ->
                             sendEvent(Event.ShowMainActivityMessage(error.text))
                         }

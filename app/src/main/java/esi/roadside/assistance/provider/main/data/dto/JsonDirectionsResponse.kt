@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class JsonDirectionsResponse(
-    val code: String,
-    val routes: List<RouteX>,
-    val uuid: String,
-    val waypoints: List<Waypoint>
+    val code: String = "",
+    val routes: List<RouteX> = emptyList(),
+    val uuid: String = "",
+    val waypoints: List<Waypoint> = emptyList()
 )

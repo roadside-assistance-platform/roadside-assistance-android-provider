@@ -13,6 +13,7 @@ import esi.roadside.assistance.provider.core.presentation.util.Event.ShowMainAct
 import esi.roadside.assistance.provider.core.presentation.util.EventBus.sendEvent
 import esi.roadside.assistance.provider.core.util.account.AccountManager
 import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
+import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification.LocationUpdate
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification.Message
@@ -26,6 +27,7 @@ import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
 import esi.roadside.assistance.provider.main.util.QueuesManager
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +36,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class ServiceManager(
@@ -54,43 +56,45 @@ class ServiceManager(
     private val maxDistanceFilter = dataStore.maxDistanceFilter
     private val maxDistance = dataStore.maxDistance
 
-    suspend fun listen() {
-        user.map { it.id to it.categories }.collectLatest { (id, categories) ->
-            withContext(Dispatchers.IO) {
-                if (categories.isNotEmpty()) queuesManager.consumeCategoryQueues(categories)
-                queuesManager.consumeUserNotifications(id, "provider")
-            }
+     fun listen(
+         scope: CoroutineScope,
+         id: String,
+         categories: Set<Categories>,
+         onLocationRequest: suspend () -> LocationModel?
+     ) {
+        Log.i("ServiceManager", "listening: $id, $categories")
+        if (categories.isNotEmpty()) queuesManager.consumeCategoryQueues(categories)
+        scope.launch(Dispatchers.IO) {
+            queuesManager.consumeUserNotifications(id, "provider")
         }
-    }
-
-    suspend fun consume(onLocationRequest: suspend () -> LocationModel?) {
-        Log.i("MainViewModel", "Consuming")
-        queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
-            Log.i("MainViewModel", "New message: $notification")
-            when(notification) {
-                is PolymorphicNotification.Service -> {
-                    onAction(ServiceAction.NewService(notification, onLocationRequest()))
-                }
-                is ServiceDone -> {
-                    onAction(
-                        ServiceAction.ServiceDone(
-                            notification.price,
-                            notification.rating
+        scope.launch(Dispatchers.IO) {
+            queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
+                Log.i("ServiceManager", "New message: $notification")
+                when(notification) {
+                    is PolymorphicNotification.Service -> {
+                        onAction(ServiceAction.NewService(notification, onLocationRequest()))
+                    }
+                    is ServiceDone -> {
+                        onAction(
+                            ServiceAction.ServiceDone(
+                                notification.price,
+                                notification.rating
+                            )
                         )
-                    )
-                }
-                is ServiceRemove -> {
-                    onAction(
-                        ServiceAction.ServiceRemoved(
-                            notification.serviceId,
-                            notification.exception
+                    }
+                    is ServiceRemove -> {
+                        onAction(
+                            ServiceAction.ServiceRemoved(
+                                notification.serviceId,
+                                notification.exception
+                            )
                         )
-                    )
-                }
-                is Message -> {
+                    }
+                    is Message -> {
 
+                    }
+                    else -> return@collectLatest
                 }
-                else -> return@collectLatest
             }
         }
     }
@@ -173,7 +177,9 @@ class ServiceManager(
                         }
                     }
                 }
+                Log.i("ServiceManager", "Sending event")
                 sendEvent(Event.RemoveRoutes)
+                Log.i("ServiceManager", "Event sent")
             }
             is ServiceAction.ServiceRemoved -> {
                 if (action.exceptionId?.let { it != user.first().id } != false) {

@@ -28,15 +28,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import esi.roadside.assistance.provider.R
 import esi.roadside.assistance.provider.core.presentation.components.IconDialog
 import esi.roadside.assistance.provider.core.util.intUpDownTransSpec
+import esi.roadside.assistance.provider.main.domain.models.FetchServicesModel
 import esi.roadside.assistance.provider.main.presentation.components.RatingBar
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeScreen
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
-import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationDetails
-import esi.roadside.assistance.provider.main.presentation.routes.notifications.NotificationsScreen
+import esi.roadside.assistance.provider.main.presentation.routes.services.ServiceDetails
+import esi.roadside.assistance.provider.main.presentation.routes.services.ServicesScreen
 import esi.roadside.assistance.provider.main.presentation.routes.profile.ProfileScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.AboutScreen
 import esi.roadside.assistance.provider.main.presentation.routes.settings.ChangePasswordScreen
@@ -79,7 +81,7 @@ fun NavigationScreen(
                 }
         } != false
     val homeUiState by mainViewModel.homeUiState.collectAsState(HomeUiState())
-    val userNotification by mainViewModel.userNotification.collectAsState()
+    val servicesHistory by mainViewModel.servicesHistory.collectAsState()
     val navigationBarVisible = isParent //and (currentNavRoute != Routes.PROFILE)
     val currentService by mainViewModel.serviceState.collectAsState()
 
@@ -106,16 +108,25 @@ fun NavigationScreen(
                         )
                     }
                 }
-                navigation<NavRoutes.Notifications>(NavRoutes.NotificationsList) {
-                    composable<NavRoutes.NotificationsList> {
-                        NotificationsScreen(userNotification) {
-                            navController.navigate(NavRoutes.Notification(it.id))
+                navigation<NavRoutes.Services>(NavRoutes.ServicesList) {
+                    composable<NavRoutes.ServicesList> {
+                        ServicesScreen(
+                            servicesHistory ?: FetchServicesModel(),
+                            homeUiState.servicesLoading,
+                            {
+                                mainViewModel.onAction(Action.FetchServices)
+                            }
+                        ) {
+                            navController.navigate(NavRoutes.Service(it.id))
                         }
                     }
-                    composable<NavRoutes.Notification> { args ->
-                        val notification = userNotification.firstOrNull { it.id == args.id }
-                        notification?.let { notification ->
-                            NotificationDetails(notification)
+                    composable<NavRoutes.Service> { args ->
+                        val service = servicesHistory
+                            ?.data
+                            ?.services
+                            ?.firstOrNull { it.id == args.toRoute<NavRoutes.Service>().id }
+                        service?.let { service ->
+                            ServiceDetails(service)
                         }
                     }
                 }
@@ -159,13 +170,13 @@ fun NavigationScreen(
         AnimatedVisibility(navigationBarVisible) {
             NavigationBar(navController, currentNavRoute) {
                 androidx.compose.animation.AnimatedVisibility(
-                    (it == Routes.NOTIFICATIONS) and userNotification.isNotEmpty(),
+                    (it == Routes.SERVICES) and (servicesHistory?.data?.services?.isNotEmpty() == true),
                     enter = materialFadeThroughIn(),
                     exit = materialFadeThroughOut()
                 ) {
                     Badge {
                         AnimatedContent(
-                            userNotification.size,
+                            servicesHistory?.data?.services?.size ?: 0,
                             label = "",
                             transitionSpec = intUpDownTransSpec
                         ) {
