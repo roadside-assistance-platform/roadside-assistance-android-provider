@@ -248,7 +248,7 @@
  Si vous ne recevez pas d\'appel, vous pouvez signaler ce prestataire pour fausse acceptation.
 
   Merci d\'utiliser Depan.Go !</string>
-    <string name="no_notifications">Aucune notification pour le moment !</string>
+    <string name="no_services">Aucune notification pour le moment !</string>
     <string name="email_adress">Adresse e-mail</string>
     <string name="client_name">Nom du client</string>
     <string name="save_changes">Enregistrer les modifications\n</string>

@@ -3,20 +3,26 @@ package esi.roadside.assistance.provider.main.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import esi.roadside.assistance.provider.core.domain.util.onError
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
 import esi.roadside.assistance.provider.core.presentation.util.Event.ExitToAuthActivity
 import esi.roadside.assistance.provider.core.presentation.util.sendEvent
 import esi.roadside.assistance.provider.core.util.account.AccountManager
-import esi.roadside.assistance.provider.main.domain.models.UserNotificationModel
+import esi.roadside.assistance.provider.main.domain.models.FetchServicesModel
 import esi.roadside.assistance.provider.main.domain.models.toLocationModel
-import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.*
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.Accept
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.Arrived
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.Finish
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.LocationUpdate
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.SelectService
+import esi.roadside.assistance.provider.main.domain.repository.ServiceAction.UnSelectService
 import esi.roadside.assistance.provider.main.domain.repository.ServiceManager
 import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
+import esi.roadside.assistance.provider.main.domain.use_cases.FetchServices
 import esi.roadside.assistance.provider.main.domain.use_cases.Logout
 import esi.roadside.assistance.provider.main.domain.use_cases.Refresh
 import esi.roadside.assistance.provider.main.presentation.routes.home.HomeUiState
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
-import esi.roadside.assistance.provider.main.presentation.routes.settings.ChangePasswordState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,13 +38,16 @@ class MainViewModel(
     accountManager: AccountManager,
     val directionsUseCase: DirectionsUseCase,
     val refreshUseCase: Refresh,
+    val fetchServices: FetchServices,
     val logoutUseCase: Logout,
 ): ViewModel() {
-    private val _userNotification = MutableStateFlow(emptyList<UserNotificationModel>())
-    val userNotification = _userNotification.asStateFlow()
+    private val _servicesHistory = MutableStateFlow<FetchServicesModel?>(null)
+    val servicesHistory = _servicesHistory.asStateFlow()
 
     private val _homeUiState = MutableStateFlow(HomeUiState())
     val homeUiState = _homeUiState.asStateFlow()
+
+    private val user = accountManager.getUserFlow()
 
     val serviceState = serviceManager.service
 
@@ -46,6 +55,9 @@ class MainViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
+            user.map { it.id }.collectLatest { user ->
+                onAction(Action.FetchServices)
+            }
             launch(Dispatchers.IO) {
                 serviceManager.listen()
             }
@@ -188,6 +200,24 @@ class MainViewModel(
             is Action.SetMessage -> {
                 _homeUiState.update {
                     it.copy(message = action.message)
+                }
+            }
+            Action.FetchServices -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _homeUiState.update {
+                        it.copy(servicesLoading = true)
+                    }
+                    fetchServices().onSuccess { service ->
+                        _servicesHistory.update { service }
+                        _homeUiState.update {
+                            it.copy(servicesLoading = false)
+                        }
+                    }.onError {
+                        Log.e("MainViewModel", "Error fetching services: ${it.text}")
+                        _homeUiState.update {
+                            it.copy(servicesLoading = false)
+                        }
+                    }
                 }
             }
         }

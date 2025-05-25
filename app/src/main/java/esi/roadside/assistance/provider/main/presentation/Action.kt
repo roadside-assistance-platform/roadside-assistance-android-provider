@@ -18,4 +18,5 @@ sealed interface Action {
         data object Arrived: Action
         data object RefreshUser: Action
         data object RemoveRoutes: Action
+        data object FetchServices: Action
 }

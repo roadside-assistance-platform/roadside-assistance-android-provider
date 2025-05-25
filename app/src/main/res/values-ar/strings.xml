@@ -254,7 +254,7 @@
  إذا لم تتلق مكالمة، يمكنك الإبلاغ عن هذا المقدم للقبول الكاذب.
 
   شكرًا لاستخدام Depan.Go!</string>
-    <string name="no_notifications">لا توجد إشعارات حتى الآن!</string>
+    <string name="no_services">لا توجد إشعارات حتى الآن!</string>
     <string name="email_adress">عنوان البريد الإلكتروني</string>
     <string name="client_name">اسم العميل</string>
     <string name="save_changes">حفظ التغييرات\n</string>

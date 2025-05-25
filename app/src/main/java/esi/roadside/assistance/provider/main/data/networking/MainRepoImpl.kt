@@ -2,15 +2,18 @@ package esi.roadside.assistance.provider.main.data.networking
 
 import esi.roadside.assistance.provider.auth.data.PersistentCookieStorage
 import esi.roadside.assistance.provider.core.data.Endpoints
-import esi.roadside.assistance.provider.core.data.dto.Service
+import esi.roadside.assistance.provider.core.data.mappers.toLocation
 import esi.roadside.assistance.provider.core.data.networking.DomainError
 import esi.roadside.assistance.provider.core.data.networking.constructUrl
 import esi.roadside.assistance.provider.core.data.networking.safeCall
 import esi.roadside.assistance.provider.core.domain.util.Result
 import esi.roadside.assistance.provider.core.domain.util.map
 import esi.roadside.assistance.provider.core.domain.util.onSuccess
+import esi.roadside.assistance.provider.main.data.dto.FetchServicesDto
 import esi.roadside.assistance.provider.main.domain.models.ClientInfo
 import esi.roadside.assistance.provider.main.domain.models.ClientInfoModel
+import esi.roadside.assistance.provider.main.domain.models.FetchServicesDataModel
+import esi.roadside.assistance.provider.main.domain.models.FetchServicesModel
 import esi.roadside.assistance.provider.main.domain.models.ServiceModel
 import esi.roadside.assistance.provider.main.domain.models.ServiceResponse
 import esi.roadside.assistance.provider.main.domain.repository.GeocodingRepo
@@ -50,6 +53,26 @@ class MainRepoImpl(
             }
             service
         }
+
+    override suspend fun fetchServices(id: String): Result<FetchServicesModel, DomainError> {
+        return safeCall<FetchServicesDto> {
+            client.get(constructUrl("${Endpoints.SERVICES}$id")).body()
+        }.map {
+            FetchServicesModel(
+                status = it.status,
+                data = it.data.toDomainModel {
+//                    var location = ""
+//                    geocodingRepo.getLocationString(it.serviceLocation.toLocation()).onSuccess { locationString ->
+//                        location = locationString
+//                    }
+//                    location
+                    ""
+                }.also {
+                    it.copy(services = it.services.sortedByDescending { service -> service.createdAt })
+                }
+            )
+        }
+    }
 
     override suspend fun logout() = storage.deleteCookie()
 }
