@@ -14,6 +14,7 @@ data class ProviderUi(
     val phone: String = "",
     val photo: Uri? = null,
     val isApproved: Boolean = false,
+    val averageRating: Double? = null,
     val location: LocationModel = LocationModel(0.0, 0.0),
     val categories: Set<Categories> = emptySet(),
 ) {

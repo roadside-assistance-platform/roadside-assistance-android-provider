@@ -30,6 +30,6 @@ data class Statistics(
     val totalServices: Int = 0,
     val completedServices: Int = 0,
     val pendingServices: Int = 0,
-    val averageRating: Double = 0.0,
+    val averageRating: Double? = 0.0,
     val totalRatings: Int = 0
 )

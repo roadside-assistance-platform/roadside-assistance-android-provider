@@ -11,4 +11,5 @@ data class ProviderInfo(
     val photo: String = "",
     val email: String = "",
     val categories: Set<Categories> = emptySet(),
+    val averageRating: Double? = null,
 )

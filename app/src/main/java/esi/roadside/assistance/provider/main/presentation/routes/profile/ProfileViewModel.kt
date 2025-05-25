@@ -96,14 +96,9 @@ class ProfileViewModel(
                             viewModelScope.launch(Dispatchers.IO) {
                                 updateUseCase(_state.value.editUser.toUpdateModel().copy(
                                     photo = _state.value.photo
-                                ))
-                                    .onSuccess {
-                                        accountManager.updateUser(it)
-                                    }
-                                    .onError {
-                                        sendEvent(ShowMainActivityMessage(it.text))
-                                    }
-
+                                )).onError {
+                                    sendEvent(ShowMainActivityMessage(it.text))
+                                }
                                 _state.update {
                                     it.copy(
                                         enableEditing = false,

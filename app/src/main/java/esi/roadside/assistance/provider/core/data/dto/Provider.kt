@@ -19,6 +19,7 @@ data class Provider(
     val serviceCategories: Set<Categories> = emptySet(),
     val services: List<Service> = emptyList(),
     val isApproved: Boolean = false,
+    val averageRating: Double? = null,
     val createdAt: String = "",
     val updatedAt: String = "",
 ) {
@@ -29,6 +30,7 @@ data class Provider(
         password = password,
         phone = phone,
         photo = photo ?: "",
+        averageRating = averageRating,
         services = services.map { it.toServiceModel("") },
         createdAt = try {
             OffsetDateTime.parse(createdAt)
@@ -50,5 +52,6 @@ data class Provider(
         photo = photo ?: "",
         email = email,
         categories = serviceCategories,
+        averageRating = averageRating,
     )
 }

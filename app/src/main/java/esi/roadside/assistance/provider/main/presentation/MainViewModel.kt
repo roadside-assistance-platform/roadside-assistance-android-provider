@@ -60,7 +60,8 @@ class MainViewModel(
             launch(Dispatchers.IO) {
                 user.map { it.id to it.serviceCategories }.collectLatest { (id, categories) ->
                     onAction(Action.FetchServices)
-                    serviceManager.listen(id, categories)  {
+                    Log.i("MainViewModel", "listening")
+                    serviceManager.listen(viewModelScope, id, categories)  {
                         _homeUiState.first().location?.toLocationModel()
                     }
                 }

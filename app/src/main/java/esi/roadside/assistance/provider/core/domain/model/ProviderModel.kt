@@ -18,6 +18,7 @@ data class ProviderModel(
     val categories: Set<Categories>,
     val services: List<ServiceModel> = emptyList(),
     val isApproved: Boolean,
+    val averageRating: Double? = null,
     val createdAt: ZonedDateTime,
     val updatedAt: ZonedDateTime
 ) {

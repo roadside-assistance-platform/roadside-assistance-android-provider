@@ -377,4 +377,6 @@
     <string name="service_information">Service Information</string>
     <string name="in_progress">In Progress</string>
     <string name="completed_text">Completed</string>
+    <string name="rating">Rating</string>
+    <string name="not_available">Not available</string>
 </resources>

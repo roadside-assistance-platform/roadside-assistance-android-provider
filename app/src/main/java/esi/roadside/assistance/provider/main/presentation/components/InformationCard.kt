@@ -72,6 +72,7 @@ fun InformationCard(
                 leadingIcon = icon,
                 error = error
             )
+        else if (enabled and !editable) return@AnimatedContent
         else
             Card(
                 Modifier.fillMaxWidth(),

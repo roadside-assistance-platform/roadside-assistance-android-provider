@@ -102,6 +102,7 @@ class SignupViewModel(
                             _state.update {
                                 it.copy(photo = url ?: "_", loading = false)
                             }
+                            sendEvent(AuthNavigate(NavRoutes.VerifyEmail))
                             onAction(SendCode(_state.value.email))
                         }
                     )

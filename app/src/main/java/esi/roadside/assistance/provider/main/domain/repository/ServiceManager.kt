@@ -27,6 +27,7 @@ import esi.roadside.assistance.provider.main.domain.use_cases.DirectionsUseCase
 import esi.roadside.assistance.provider.main.domain.use_cases.ReverseGeocoding
 import esi.roadside.assistance.provider.main.presentation.routes.home.ProviderState
 import esi.roadside.assistance.provider.main.util.QueuesManager
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +36,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class ServiceManager(
@@ -55,36 +56,45 @@ class ServiceManager(
     private val maxDistanceFilter = dataStore.maxDistanceFilter
     private val maxDistance = dataStore.maxDistance
 
-    suspend fun listen(id: String, categories: Set<Categories>, onLocationRequest: suspend () -> LocationModel?) {
+     fun listen(
+         scope: CoroutineScope,
+         id: String,
+         categories: Set<Categories>,
+         onLocationRequest: suspend () -> LocationModel?
+     ) {
         Log.i("ServiceManager", "listening: $id, $categories")
         if (categories.isNotEmpty()) queuesManager.consumeCategoryQueues(categories)
-        queuesManager.consumeUserNotifications(id, "provider")
-        queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
-            Log.i("ServiceManager", "New message: $notification")
-            when(notification) {
-                is PolymorphicNotification.Service -> {
-                    onAction(ServiceAction.NewService(notification, onLocationRequest()))
-                }
-                is ServiceDone -> {
-                    onAction(
-                        ServiceAction.ServiceDone(
-                            notification.price,
-                            notification.rating
+        scope.launch(Dispatchers.IO) {
+            queuesManager.consumeUserNotifications(id, "provider")
+        }
+        scope.launch(Dispatchers.IO) {
+            queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
+                Log.i("ServiceManager", "New message: $notification")
+                when(notification) {
+                    is PolymorphicNotification.Service -> {
+                        onAction(ServiceAction.NewService(notification, onLocationRequest()))
+                    }
+                    is ServiceDone -> {
+                        onAction(
+                            ServiceAction.ServiceDone(
+                                notification.price,
+                                notification.rating
+                            )
                         )
-                    )
-                }
-                is ServiceRemove -> {
-                    onAction(
-                        ServiceAction.ServiceRemoved(
-                            notification.serviceId,
-                            notification.exception
+                    }
+                    is ServiceRemove -> {
+                        onAction(
+                            ServiceAction.ServiceRemoved(
+                                notification.serviceId,
+                                notification.exception
+                            )
                         )
-                    )
-                }
-                is Message -> {
+                    }
+                    is Message -> {
 
+                    }
+                    else -> return@collectLatest
                 }
-                else -> return@collectLatest
             }
         }
     }
