@@ -34,3 +34,5 @@
 -keep public class esi.roadside.assistance.provider.main.domain.PolymorphicNotification.*
 -keepnames public class esi.roadside.assistance.provider.main.domain.PolymorphicNotification
 -keepnames public class esi.roadside.assistance.provider.main.domain.PolymorphicNotification.*
+-keep public class esi.roadside.assistance.provider.main.domain.Categories
+-keepnames class esi.roadside.assistance.provider.main.domain.Categories

@@ -13,6 +13,7 @@ import esi.roadside.assistance.provider.core.presentation.util.Event.ShowMainAct
 import esi.roadside.assistance.provider.core.presentation.util.EventBus.sendEvent
 import esi.roadside.assistance.provider.core.util.account.AccountManager
 import esi.roadside.assistance.provider.main.data.dto.JsonDirectionsResponse
+import esi.roadside.assistance.provider.main.domain.Categories
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification.LocationUpdate
 import esi.roadside.assistance.provider.main.domain.PolymorphicNotification.Message
@@ -54,19 +55,12 @@ class ServiceManager(
     private val maxDistanceFilter = dataStore.maxDistanceFilter
     private val maxDistance = dataStore.maxDistance
 
-    suspend fun listen() {
-        user.map { it.id to it.categories }.collectLatest { (id, categories) ->
-            withContext(Dispatchers.IO) {
-                if (categories.isNotEmpty()) queuesManager.consumeCategoryQueues(categories)
-                queuesManager.consumeUserNotifications(id, "provider")
-            }
-        }
-    }
-
-    suspend fun consume(onLocationRequest: suspend () -> LocationModel?) {
-        Log.i("MainViewModel", "Consuming")
+    suspend fun listen(id: String, categories: Set<Categories>, onLocationRequest: suspend () -> LocationModel?) {
+        Log.i("ServiceManager", "listening: $id, $categories")
+        if (categories.isNotEmpty()) queuesManager.consumeCategoryQueues(categories)
+        queuesManager.consumeUserNotifications(id, "provider")
         queuesManager.notifications.receiveAsFlow().collectLatest { notification ->
-            Log.i("MainViewModel", "New message: $notification")
+            Log.i("ServiceManager", "New message: $notification")
             when(notification) {
                 is PolymorphicNotification.Service -> {
                     onAction(ServiceAction.NewService(notification, onLocationRequest()))
@@ -173,7 +167,9 @@ class ServiceManager(
                         }
                     }
                 }
+                Log.i("ServiceManager", "Sending event")
                 sendEvent(Event.RemoveRoutes)
+                Log.i("ServiceManager", "Event sent")
             }
             is ServiceAction.ServiceRemoved -> {
                 if (action.exceptionId?.let { it != user.first().id } != false) {

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(
     val serviceManager: ServiceManager,
@@ -54,16 +55,14 @@ class MainViewModel(
     val isApproved = accountManager.getUserFlow().map { it.isApproved }
 
     init {
+        Log.i("MainViewModel", "init")
         viewModelScope.launch(Dispatchers.Main) {
-            user.map { it.id }.collectLatest { user ->
-                onAction(Action.FetchServices)
-            }
             launch(Dispatchers.IO) {
-                serviceManager.listen()
-            }
-            launch(Dispatchers.IO) {
-                serviceManager.consume {
-                    _homeUiState.first().location?.toLocationModel()
+                user.map { it.id to it.serviceCategories }.collectLatest { (id, categories) ->
+                    onAction(Action.FetchServices)
+                    serviceManager.listen(id, categories)  {
+                        _homeUiState.first().location?.toLocationModel()
+                    }
                 }
             }
             launch(Dispatchers.IO) {
@@ -177,8 +176,9 @@ class MainViewModel(
                 }
             }
             Action.RemoveRoutes -> {
+                Log.i("MainViewModel", "Action.RemoveRoutes")
                 _homeUiState.update {
-                    it.copy(directions = null)
+                    it.copy(directions = null, location = null)
                 }
             }
             Action.RefreshUser -> {
@@ -208,7 +208,7 @@ class MainViewModel(
                         it.copy(servicesLoading = true)
                     }
                     fetchServices().onSuccess { service ->
-                        _servicesHistory.update { service }
+                        _servicesHistory.value = service
                         _homeUiState.update {
                             it.copy(servicesLoading = false)
                         }
